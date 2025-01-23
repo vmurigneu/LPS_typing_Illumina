@@ -175,18 +175,17 @@ process bracken {
         label "high_memory"
         publishDir "$params.outdir/$sample/6_kraken",  mode: 'copy', pattern: "*.log", saveAs: { filename -> "${sample}_$filename" }
         publishDir "$params.outdir/$sample/6_kraken",  mode: 'copy', pattern: '*txt', saveAs: { filename -> "${sample}_$filename" }
-        publishDir "$params.outdir/$sample/6_kraken",  mode: 'copy', pattern: '*tsv.gz', saveAs: { filename -> "${sample}_$filename" }
+        publishDir "$params.outdir/$sample/6_kraken",  mode: 'copy', pattern: '*tsv', saveAs: { filename -> "${sample}_$filename" }
         input:
                 tuple val(sample), path(reads1_trimmed), path(reads2_trimmed), path(kraken2_report), path(kraken_tsv)
         output:
-                tuple val(sample), path(reads1_trimmed), path(reads2_trimmed), path("bracken_report.txt"), path("bracken.tsv.gz"),  emit: bracken_results
+                tuple val(sample), path(reads1_trimmed), path(reads2_trimmed), path("bracken_report.txt"), path("bracken_species.tsv"),  emit: bracken_results
                 path("bracken.log")
         when:
         !params.skip_kraken
         script:
         """
-        bracken -d ${params.kraken_db} -i ${kraken2_report} -o bracken.tsv  -w bracken_report.txt -r 100 -l S -t ${params.bracken_threads}
-	gzip bracken.tsv
+        bracken -d ${params.kraken_db} -i ${kraken2_report} -o bracken_species.tsv  -w bracken_report.txt -r 100 -l S -t ${params.bracken_threads}
         cp .command.log bracken.log
         """
 }
