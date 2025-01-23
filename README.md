@@ -124,3 +124,46 @@ Once the nextflow.sh file is ready, the user can submit the pipeline on Bunya us
 sbatch nextflow.sh
 ```
 
+## Optional parameters
+
+Some parameters can be added to the command line in order to include or skip some steps and modify some parameters:
+
+1. Read trimming:
+* `--skip_fastp`: skip the read trimming step (default=false). Not recommended. 
+
+2. FastQC reads quality metrics:
+* `--skip_fastqc`: skip the FastQC step (default=false)
+
+3. Genome assembly and polishing:
+* `--skip_assembly`: skip the assembly step (default=false). Note: it is not recommended to skip assembly as many steps in the downstream processing depends on the assembly results.   
+* `--shovill_threads`: number of threads for the assembly (default=4)
+* `--genome_size`: estimated genome size (default="2.3M")
+
+4. Assembly quality assessment with QUAST:
+* `--skip_quast`: skip the QUAST step (default=false)
+* `--quast_threads`: number of threads for QUAST (default=2)
+
+5. Assembly quality assessment with CheckM:
+* `--skip_checkm`: skip the CheckM step (default=false)
+* `--checkm_db`: path to the CheckM database folder (default="../../../databases/CheckM-1.2.2)
+
+6. Kraken2/Bracken taxonomy classification:
+* `--skip_kraken`: skip the Kraken2/Bracken classification step (default=false)
+* `--kraken_db`: path to the Kraken2 database folder (default="../../../databases/k2_pluspf_20240605")
+
+7. LPS typing using Kaptive:
+* `--skip_kaptive3`: skip the Kaptive typing step (default=false)
+* `--kaptive_db_9lps`: path to the Kaptive database file (default=""../../../databases/v1_kaptive3/9lps.gbk")
+
+8. Variant calling using Snippy:
+* `--skip_snippy`: skip the variant calling Snippy pipeline (default=false)
+* `--snippy_threads`: number of threads for the Snippy pipeline (default=6)
+* `--reference_LPS`: path to the file summarising the reference LPS sequence files (default="../../../databases/reference_LPS.txt")
+
+9. MLST typing:
+* `--skip_mlst`: skip the MLST typing step (default=false)
+
+## Structure of the output folders
+
+The pipeline will create several folders corresponding to the different steps of the pipeline. 
+
