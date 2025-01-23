@@ -169,7 +169,7 @@ process kraken {
 }
 
 process bracken {
-        cpus "${params.threads}"
+        cpus "${params.bracken_threads}"
         tag "${sample}"
         label "cpu"
         label "high_memory"
