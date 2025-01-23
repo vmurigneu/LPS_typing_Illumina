@@ -69,7 +69,7 @@ When a Nexflow pipeline script is launched, Nextflow looks for a file named **ne
 
 The pipeline uses separated Singularity containers for all processes. Nextflow will automatically pull the singularity images required to run the pipeline and cache those images in the singularity directory in the pipeline work directory by default or in the singularity.cacheDir specified in the nextflow.config file ([see documentation](https://www.nextflow.io/docs/latest/singularity.html)). Ensure that you have sufficient space in your assigned singularity directory as images can be large.   
 
-An example configuration file can be found [here](https://github.com/vmurigneu/LPS_typing/blob/main/nextflow.config). 
+An example configuration file can be found [here](https://github.com/vmurigneu/LPS_typing_Illumina/blob/main/nextflow.config). 
 
 - **b) Nextflow main script (main.nf)**
 
@@ -88,11 +88,17 @@ cp -r /QRISdata/Q2313/Valentine/PIPELINES/databases ${dir}
 
 **3) Prepare the samplesheet file (csv)**
 
-The user must copy the Illumina fastq files in a directory (parameter "--fqdir") and specify the path to those files in the samplesheet file.   
-The samplesheet file is a comma-separated values files that defines the names of the samples with their corresponding input fastq files. The header line should match the header line in the examples below. The samplesheet can be saved in a folder named samplesheet e.g. 
+- The raw Illumina fastq files must be copied in a directory (parameter "--fqdir").
 ```
-mkdir /scratch/project_mnt/SXXX/LPS_typing_Illumina/samplesheet
-vim /scratch/project_mnt/SXXX/LPS_typing_Illumina/samplesheet/samples.csv
+fqdir=/scratch/project_mnt/SXXX/PIPELINE/LPS_typing_pipeline_Illumina/fastq
+mkdir $fqdir
+cp /path/to/fastq/files/ $fqdir
+```
+  
+- The user must specify the path to the raw Illumina files in the samplesheet file. The samplesheet file is a comma-separated values files that defines the names of the samples with their corresponding input fastq files. The header line should match the header line in the examples below. The samplesheet can be saved in a folder named samplesheet e.g. 
+```
+mkdir /scratch/project_mnt/SXXX/PIPELINE/LPS_typing_Illumina/samplesheet
+vim /scratch/project_mnt/SXXX/PIPELINE/LPS_typing_Illumina/samplesheet/samples.csv
 ```
 
 The samplesheet contains one line for each sample with the following information: the sample identifier (column "sample_id") and the path to the corresponding Illumina paired-end reads file (columns "short_fastq_1" and "short_fastq_2"). File paths are given in relation to the workflow base directory, they are not absolute paths. 
@@ -104,16 +110,7 @@ PM3065,fastq/3_22VH7WLT3_GCAATATTCA-GGCGCCAATT_L002_R1.fastq.gz,fastq/3_22VH7WLT
 
 **4) Run the pipeline**
 
-The pipeline will be launched on the HPC Bunya using the bash script nextflow.sh.   
-
-The raw Illumina fastq files must be copied in a directory (parameter "--fqdir").
-```
-fqdir=/scratch/project_mnt/SXXX/LPS_typing_pipeline_Illumina/fastq
-mkdir $fqdir
-cp /path/to/fastq/files/ $fqdir
-```
-
-Then the command to start the pipeline is:  
+The pipeline will be launched on the HPC Bunya using the bash script nextflow.sh. The command to start the pipeline is:  
 `nextflow main.nf --samplesheet /path/to/samples.csv --fqdir /path/to/fastq/directory/ --outdir /path/to/outdir/ --slurm_account 'account' `
 ```
 --samplesheet: path to the samplesheet file
