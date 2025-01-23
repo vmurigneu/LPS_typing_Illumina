@@ -32,7 +32,7 @@ The software [CheckM](https://github.com/Ecogenomics/CheckM) v1.2.2 (command [li
 
 ### 6. Kraken2/Bracken taxonomy classification
 
-Illumina reads are used as input to the taxonomy classifier [Kraken2](https://github.com/DerrickWood/kraken2) v2.1.3 followed by [Bracken](https://github.com/jenniferlu717/Bracken) v3.0 to estimate abundance of species within a sample. The default Kraken2 database is the PlusPF which contains Standard plus RefSeq protozoa & fungi (see [details](https://benlangmead.github.io/aws-indexes/k2)). The database was downloaded from https://genome-idx.s3.amazonaws.com/kraken/k2_pluspf_20240605.tar.gz. 
+Illumina reads are used as input to the taxonomy classifier [Kraken2](https://github.com/DerrickWood/kraken2) v2.1.3 followed by [Bracken](https://github.com/jenniferlu717/Bracken) v3.0 to estimate abundance of species within a sample. The default Kraken2 database is the PlusPF which contains the Standard database (RefSeq archaea, bacteria, viral, plasmid, human, UniVec_Core) plus RefSeq protozoa and fungi, see [details](https://benlangmead.github.io/aws-indexes/k2). The database was downloaded from https://genome-idx.s3.amazonaws.com/kraken/k2_pluspf_20240605.tar.gz.   
 
 ### 7. LPS typing using Kaptive
 
@@ -176,9 +176,11 @@ Each sample folder will contain the following folders:
 * **3_assembly:** Shovill assembly output files.
 * **4_quast:** QUAST output report file (sample_id_report.tsv).
 * **5_checkm:** CheckM output file (sample_id_checkm_lineage_wf_results.tsv).  
-* **6_kraken:**  Kraken2/Bracken taxonomy classification results for the Illumina reads, see [details]()
-  * Centrifuge classification output: classification assignments for a read (sample_id_centrifuge_species_report.tsv)
-  * Centrifuge summary output: classification summary for each genome or taxonomic unit (sample_id_centrifuge_report.tsv)
+* **6_kraken:**  Kraken2/Bracken taxonomy classification results, see output files format details [here](https://github.com/DerrickWood/kraken2/wiki/Manual#output-formats) and [here](https://ccb.jhu.edu/software/bracken/index.shtml?t=manual#format)
+  * Kraken2 classification report (sample_id_kraken2_report.txt)  
+  * Kraken2 classification assignments for a read (sample_id_kraken2.tsv.gz)  
+  * Bracken species abundance results (sample_id_bracken_species.tsv)   
+  * Bracken results in Kraken style report format (sampel_id_bracken_report.txt)  
 * **7_kaptive_v3:** Kaptive output files, see [details](https://kaptive.readthedocs.io/en/latest/Outputs.html)
     * LPS type results (sample_id_kaptive_results.tsv)
     * LPS sequence in fasta format (sample_id_flye_polished_kaptive_results.fna)
