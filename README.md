@@ -191,5 +191,6 @@ Each sample folder will contain the following folders:
     * Unfiltered variants from Freebayes in VCF format (sample_id_clair_snps.raw.vcf) 
     * Filtered variants from Freebayes in VCF format (sample_id_snps.filt.vcf)
     * Summary of variants in tabular format (sample_id_snps.tab)
+    * Summary of high impact variants (frameshift_variant and stop_gained) in tabular format (sample_id_snps.high_impact.tab)
 * **9_mlst:** MLST typing output file (sample_id_mlst_pmultocida_rirdc.csv) 
 
