@@ -134,7 +134,7 @@ Some parameters can be added to the command line in order to include or skip som
 2. FastQC reads quality metrics:
 * `--skip_fastqc`: skip the FastQC step (default=false)
 
-3. Genome assembly and polishing:
+3. Genome assembly:
 * `--skip_assembly`: skip the assembly step (default=false). Note: it is not recommended to skip assembly as many steps in the downstream processing depends on the assembly results.   
 * `--shovill_threads`: number of threads for the assembly (default=4)
 * `--genome_size`: estimated genome size (default="2.3M")
@@ -166,4 +166,26 @@ Some parameters can be added to the command line in order to include or skip som
 ## Structure of the output folders
 
 The pipeline will create several folders corresponding to the different steps of the pipeline. 
+The main output folder (`--outdir`) will contain a folder per sample (the folder is named as in the column sample_id in the samplesheet file).
+
+Each sample folder will contain the following folders:
+* **1_trimming:** Paired-end trimmed fastq files (sample_id_R1_trimmed.fastq.gz and sample_id_R2_trimmed.fastq.gz).
+* **2_fastqc:** FastQC quality control results for the paired-end reads:
+    * FastQC report in html format (sample_id_R1_trimmed_fastqc.html and sample_id_R2_trimmed_fastqc.html)
+    * FastQC zipped results folder (sample_id_R1_trimmed_fastqc.zip and sample_id_R2_trimmed_fastqc.zip)
+* **3_assembly:** Shovill assembly output files.
+* **4_quast:** QUAST output report file (sample_id_report.tsv).
+* **5_checkm:** CheckM output file (sample_id_checkm_lineage_wf_results.tsv).  
+* **6_kraken:**  Kraken2/Bracken taxonomy classification results for the Illumina reads, see [details]()
+  * Centrifuge classification output: classification assignments for a read (sample_id_centrifuge_species_report.tsv)
+  * Centrifuge summary output: classification summary for each genome or taxonomic unit (sample_id_centrifuge_report.tsv)
+* **7_kaptive_v3:** Kaptive output files, see [details](https://kaptive.readthedocs.io/en/latest/Outputs.html)
+    * LPS type results (sample_id_kaptive_results.tsv)
+    * LPS sequence in fasta format (sample_id_flye_polished_kaptive_results.fna)
+* **8_snippy:** Mapping files and variant calling results from Snippy, see [details](https://github.com/tseemann/snippy?tab=readme-ov-file#output-files):
+    * BWA mapping file in bam format (sample_id_snps.bam_mapped.bam and .bai index). 
+    * Unfiltered variants from Freebayes in VCF format (sample_id_clair_snps.raw.vcf) 
+    * Filtered variants from Freebayes in VCF format (sample_id_snps.filt.vcf)
+    * Summary of variants in tabular format (sample_id_snps.tab)
+* **9_mlst:** MLST typing output file (sample_id_mlst_pmultocida_rirdc.csv) 
 
