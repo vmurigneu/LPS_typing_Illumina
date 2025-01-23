@@ -83,7 +83,7 @@ process fastqc {
 }
 
 process shovill {
-        cpus "${params.threads}"
+        cpus "${params.shovill_threads}"
         tag "${sample}"
         label "cpu"
         label "high_memory"
@@ -97,7 +97,7 @@ process shovill {
 		path("*fa")
         script:
         """
-        shovill --outdir \$PWD --R1 ${reads1} --R2 ${reads2} --gsize ${params.genome_size} --force --cpus ${params.threads} 
+        shovill --outdir \$PWD --R1 ${reads1} --R2 ${reads2} --gsize ${params.genome_size} --force --cpus ${params.shovill_threads} 
         cp .command.log shovill.log
         """
 }
@@ -114,7 +114,7 @@ process quast {
 		tuple val(sample), path("report.tsv"), emit: quast_results
                 path("quast.log")
         when:
-        !params.skip_quast | !params.skip_shovill
+        !params.skip_quast
         script:
         """
 	quast.py ${assembly} --threads ${params.threads} -o \$PWD
