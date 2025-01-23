@@ -173,7 +173,9 @@ Each sample folder will contain the following folders:
 * **2_fastqc:** FastQC quality control results for the paired-end reads:
     * FastQC report in html format (sample_id_R1_trimmed_fastqc.html and sample_id_R2_trimmed_fastqc.html)
     * FastQC zipped results folder (sample_id_R1_trimmed_fastqc.zip and sample_id_R2_trimmed_fastqc.zip)
-* **3_assembly:** Shovill assembly output files.
+* **3_assembly:** Shovill assembly output files, see [details](https://github.com/tseemann/shovill?tab=readme-ov-file#output-files).
+    * Final genome assembly in fasta format (sample_id_contigs.fa)
+    * SPADES assembly graph (sample_id_contigs.gfa)
 * **4_quast:** QUAST output report file (sample_id_report.tsv).
 * **5_checkm:** CheckM output file (sample_id_checkm_lineage_wf_results.tsv).  
 * **6_kraken:**  Kraken2/Bracken taxonomy classification results, see output files format details [here](https://github.com/DerrickWood/kraken2/wiki/Manual#output-formats) and [here](https://ccb.jhu.edu/software/bracken/index.shtml?t=manual#format)
