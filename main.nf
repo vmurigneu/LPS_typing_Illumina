@@ -7,6 +7,7 @@ nextflow.enable.dsl=2
         Pasteurella multocida LPS analysis pipeline
 ========================================================================================
  #### Documentation
+ #https://github.com/vmurigneu/LPS_typing_Illumina
  #### Authors
  Valentine Murigneux <v.murigneux@uq.edu.au>
 ========================================================================================
@@ -222,7 +223,7 @@ process snippy {
 	input:
                 tuple val(sample), path(reads1), path(reads2), path(reads1_trimmed), path(reads2_trimmed), path(kaptive_report)
 	output:
-                tuple val(sample), path("snps.tab"), path("snps.raw.vcf"), path("snps.filt.vcf"),  path("snps.bam"), path("snps.bam.bai"),  emit: snippy_results
+                tuple val(sample), path("snps.tab"), path("snps.high_impact.tab"), path("snps.raw.vcf"), path("snps.filt.vcf"),  path("snps.bam"), path("snps.bam.bai"),  emit: snippy_results
 		path("snippy.log")
         when:
         !params.skip_snippy
@@ -231,7 +232,8 @@ process snippy {
 	locus=`tail -1 !{kaptive_report} | cut -f3`
 	ref_gb=`grep ${locus:0:2} !{params.reference_LPS} | cut -f2`
 	snippy --cpus !{params.snippy_threads} --force --outdir \$PWD --ref $ref_gb --R1 !{reads1_trimmed} --R2 !{reads2_trimmed}
-        cp .command.log snippy.log
+        egrep "^CHROM|frameshift_variant|stop_gained" snps.tab > snps.high_impact.tab
+	cp .command.log snippy.log
         '''
 }
 
