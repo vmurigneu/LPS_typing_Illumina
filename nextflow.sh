@@ -4,7 +4,11 @@
 #SBATCH --job-name=Illumina_LPS_pipeline
 #SBATCH --output=./s%j_job.pipeline_Illumina_L6_ONT_test.out
 #SBATCH --error=./s%j_job.pipeline_Illumina_L6_ONT_test.error
+<<<<<<< HEAD
 #SBATCH --account=a_uqds
+=======
+#SBATCH --account=a_qcif_support
+>>>>>>> f8f2fa79aec4532f1814eaa13fd4cb12896b8cb3
 #SBATCH --partition=general
 #SBATCH --nodes=1
 #SBATCH --tasks-per-node=1
@@ -13,7 +17,11 @@
 module load nextflow/23.04.2
 
 #Directory containing the nextflow.config file and the main.nf script
+<<<<<<< HEAD
 dir=/scratch/project/uqds/valentine/LPS/PIPELINE
+=======
+dir=/scratch/project_mnt/S0091/valentine/LPS/PIPELINE
+>>>>>>> f8f2fa79aec4532f1814eaa13fd4cb12896b8cb3
 cd ${dir}
 
 #Samplesheet file
@@ -23,13 +31,18 @@ samplesheet=${dir}/samplesheet/samples_L6_test.csv
 out_dir=${dir}/results_test
 
 #Bunya Slurm account 
+<<<<<<< HEAD
 slurm_account='a_uqds'
+=======
+slurm_account='a_qcif_support'
+>>>>>>> f8f2fa79aec4532f1814eaa13fd4cb12896b8cb3
 
 #Directory containing the Illumina fastq files
 fqdir=${dir}/fastq
 #cp /QRISdata/Q2313/AGRF-raw-Illumina/AGRF_CAGRF24030272-2_22VH7WLT3/*fastq.gz ${fqdir}
 
 #Run the pipeline (-resume is used to restart the pipeline if it fails)
+<<<<<<< HEAD
 #nextflow main.nf --outdir ${out_dir} --fqdir ${fqdir} --samplesheet ${samplesheet} -resume
 
 # Collect main results in one file for all samples
@@ -59,3 +72,8 @@ for file in `ls ${out_dir}/*/9_mlst/*_mlst_pmultocida_rirdc.csv`; do fileName=$(
 
 #clean folder $out_dir
 rm $out_dir/*tmp  $out_dir/header*
+=======
+nextflow main.nf --outdir ${out_dir} --fqdir ${fqdir} --samplesheet ${samplesheet} -resume
+
+
+>>>>>>> f8f2fa79aec4532f1814eaa13fd4cb12896b8cb3
