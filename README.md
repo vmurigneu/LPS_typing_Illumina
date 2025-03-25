@@ -111,9 +111,8 @@ PM3065,fastq/3_22VH7WLT3_GCAATATTCA-GGCGCCAATT_L002_R1.fastq.gz,fastq/3_22VH7WLT
 **4) Run the pipeline**
 
 The pipeline will be launched on the HPC Bunya using the bash script nextflow.sh. The command to start the pipeline is:  
-```
-nextflow main.nf --samplesheet /path/to/samples.csv --fqdir /path/to/fastq/directory/ --outdir /path/to/outdir/ --slurm_account 'account' 
-```
+`nextflow main.nf --samplesheet /path/to/samples.csv --fqdir /path/to/fastq/directory/ --outdir /path/to/outdir/ --slurm_account 'account' `
+
 ```
 --samplesheet: path to the samplesheet file
 --outdir: path to the output directory to be created
@@ -121,10 +120,8 @@ nextflow main.nf --samplesheet /path/to/samples.csv --fqdir /path/to/fastq/direc
 --slurm_account: name of the Bunya account (default='a_uqds') 
 ```
 
-To run the assembly and assembly metrics steps only (skip LPS typing and variant calling):  
-```
-nextflow main.nf --samplesheet /path/to/samples.csv --fqdir /path/to/fastq/directory/ --outdir /path/to/outdir/ --slurm_account 'account' --skip_kaptive3 --skip_snippy
-```
+Note: To run the assembly and assembly metrics steps only (skip LPS typing and variant calling):  
+`nextflow main.nf --samplesheet /path/to/samples.csv --fqdir /path/to/fastq/directory/ --outdir /path/to/outdir/ --slurm_account 'account' --skip_kaptive3 --skip_snippy`
 
 Once the nextflow.sh file is ready, the user can submit the pipeline on Bunya using the command:
 ```
