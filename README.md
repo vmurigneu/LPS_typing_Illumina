@@ -162,7 +162,7 @@ Some parameters can be added to the command line in order to include or skip som
 
 9. MLST typing:
 * `--skip_mlst`: skip the MLST typing step (default=false)
-* `--skip_mlst`: MLST typing scheme (default="pmultocida_2")
+* `--mlst_scheme`: MLST typing scheme (default="pmultocida_2")
 
 ## Structure of the output folders
 
