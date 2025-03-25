@@ -129,12 +129,12 @@ process checkm {
         label "cpu"
         label "high_memory"
         publishDir "$params.outdir/$sample/5_checkm",  mode: 'copy', pattern: "*.log", saveAs: { filename -> "${sample}_$filename" }
-        publishDir "$params.outdir/$sample/5_checkm",  mode: 'copy', pattern: '*tsv', saveAs: { filename -> "${sample}_$filename" }
+	publishDir "$params.outdir/$sample/5_checkm",  mode: 'copy', pattern: '*tsv'
         input:
                 tuple val(sample), path(assembly)
         output:
-                tuple val(sample), path("checkm_lineage_wf_results.tsv"),  emit: checkm_results
                 path("checkm.log")
+		path("*checkm_lineage_wf_results.tsv"), emit: checkm_results
         when:
         !params.skip_checkm
         script:
@@ -142,8 +142,23 @@ process checkm {
         export CHECKM_DATA_PATH=${params.checkm_db}
         checkm data setRoot ${params.checkm_db}
         checkm lineage_wf --reduced_tree `dirname ${assembly}` \$PWD --threads ${params.threads} --pplacer_threads ${params.threads} --tab_table -f checkm_lineage_wf_results.tsv -x fa
-        cp .command.log checkm.log
+        mv checkm_lineage_wf_results.tsv ${sample}_checkm_lineage_wf_results.tsv
+	cp .command.log checkm.log
         """
+}
+
+process summary_checkm {
+	publishDir "$params.outdir/10_report",  mode: 'copy', pattern: '*tsv'
+	input:
+		path(checkm_files)
+	output:
+		path("5_checkm_lineage_wf_results.tsv"), emit: checkm_summary
+	script:
+	"""
+	echo -e  sampleID\\\tMarker_lineage\\\tNbGenomes\\\tNbMarkers\\\tNbMarkerSets\\\t0\\\t1\\\t2\\\t3\\\t4\\\t5+\\\tCompleteness\\\tContamination\\\tStrain_heterogeneity > header_checkm
+	for file in `ls *checkm_lineage_wf_results.tsv`; do fileName=\$(basename \$file); sample=\${fileName%%_checkm_lineage_wf_results.tsv}; grep -v Bin \$file | sed s/^contigs/\${sample}/  >> 5_checkm_lineage_wf_results.tsv.tmp; done
+	cat header_checkm 5_checkm_lineage_wf_results.tsv.tmp > 5_checkm_lineage_wf_results.tsv
+	"""
 }
 
 process kraken {
@@ -175,19 +190,33 @@ process bracken {
         label "cpu"
         label "high_memory"
         publishDir "$params.outdir/$sample/6_kraken",  mode: 'copy', pattern: "*.log", saveAs: { filename -> "${sample}_$filename" }
-        publishDir "$params.outdir/$sample/6_kraken",  mode: 'copy', pattern: '*txt', saveAs: { filename -> "${sample}_$filename" }
-        publishDir "$params.outdir/$sample/6_kraken",  mode: 'copy', pattern: '*tsv', saveAs: { filename -> "${sample}_$filename" }
+        publishDir "$params.outdir/$sample/6_kraken",  mode: 'copy', pattern: '*tsv'
         input:
                 tuple val(sample), path(reads1_trimmed), path(reads2_trimmed), path(kraken2_report), path(kraken_tsv)
         output:
-                tuple val(sample), path(reads1_trimmed), path(reads2_trimmed), path("bracken_report.txt"), path("bracken_species.tsv"),  emit: bracken_results
                 path("bracken.log")
+		path("*bracken_species.tsv"), emit: bracken_results
         when:
         !params.skip_kraken
         script:
         """
         bracken -d ${params.kraken_db} -i ${kraken2_report} -o bracken_species.tsv  -w bracken_report.txt -r 100 -l S -t ${params.bracken_threads}
+	mv bracken_species.tsv ${sample}_bracken_species.tsv
         cp .command.log bracken.log
+        """
+}
+
+process summary_bracken {
+        publishDir "$params.outdir/10_report",  mode: 'copy', pattern: '*tsv'
+        input:
+                path(bracken_files)
+        output:
+                path("6_bracken_species.tsv"), emit: bracken_summary
+        script:
+        """
+        echo -e sampleID\\\tname\\\ttaxonomy_id\\\ttaxonomy_lvl\\\tkraken_assigned_reads\\\tadded_reads\\\tnew_est_reads\\\tfraction_total_reads > header_bracken
+        for file in `ls *_bracken_species.tsv`; do fileName=\$(basename \$file); sample=\${fileName%%_bracken_species.tsv}; grep Pasteurella \$file | grep multocida | sed s/^/\${sample}\\\t/  >> 6_bracken_species.tsv.tmp; done
+        cat header_bracken 6_bracken_species.tsv.tmp > 6_bracken_species.tsv
         """
 }
 
@@ -196,12 +225,13 @@ process kaptive3 {
         tag "${sample}"
         label "cpu"
         publishDir "$params.outdir/$sample/7_kaptive_v3",  mode: 'copy', pattern: "*.log", saveAs: { filename -> "${sample}_$filename" }
-        publishDir "$params.outdir/$sample/7_kaptive_v3",  mode: 'copy', pattern: '*tsv', saveAs: { filename -> "${sample}_$filename" }
 	publishDir "$params.outdir/$sample/7_kaptive_v3",  mode: 'copy', pattern: '*fna', saveAs: { filename -> "${sample}_$filename" }
+	publishDir "$params.outdir/$sample/7_kaptive_v3",  mode: 'copy', pattern: '*tsv'
         input:
                 tuple val(sample), path(assembly)
         output:
-                tuple val(sample), path("kaptive_results.tsv"),  emit: kaptive_results
+		tuple val(sample), path("*kaptive_results.tsv"), emit: kaptive_results
+		path("*kaptive_results.tsv"),  emit: kaptive_tsv
 		path("*fna")
                 path("kaptive_v3.log")
         when:
@@ -210,7 +240,22 @@ process kaptive3 {
         """
 	kaptive assembly ${params.kaptive_db_9lps} ${assembly} -f \$PWD -o kaptive_results.tsv
         cp .command.log kaptive_v3.log
+	mv kaptive_results.tsv ${sample}_kaptive_results.tsv
         """
+}
+
+process summary_kaptive {
+        publishDir "$params.outdir/10_report",  mode: 'copy', pattern: '*tsv'
+	input:
+		path(kaptive_files)
+	output:
+		path("7_kaptive_results.tsv"), emit: kaptive_summary
+	script:
+	"""
+	echo -e sampleID\\\tBest match locus\\\tBest match type\\\tMatch confidence\\\tProblems\\\tIdentity\\\tCoverage\\\tLength discrepancy\\\tExpected genes in locus\\\tExpected genes in locus, details\\\tMissing expected genes\\\tOther genes in locus\\\tOther genes in locus, details\\\tExpected genes outside locus\\\tExpected genes outside locus, details\\\tOther genes outside locus\\\tOther genes outside locus, details\\\tTruncated genes, details\\\tExtra genes, details >  header_kaptive3
+	for file in `ls *_kaptive_results.tsv`; do fileName=\$(basename \$file); sample=\${fileName%%_kaptive_results.tsv}; grep -v Assembly \$file | sed s/contigs/\${sample}/  >> 7_kaptive_results.tsv.tmp; done
+	cat header_kaptive3 7_kaptive_results.tsv.tmp > 7_kaptive_results.tsv
+	"""
 }
 
 process snippy {
@@ -218,13 +263,14 @@ process snippy {
         tag "${sample}"
         label "cpu"
         publishDir "$params.outdir/$sample/8_snippy",  mode: 'copy', pattern: "*.log", saveAs: { filename -> "${sample}_$filename" }
-        publishDir "$params.outdir/$sample/8_snippy",  mode: 'copy', pattern: '*tab', saveAs: { filename -> "${sample}_$filename" }
         publishDir "$params.outdir/$sample/8_snippy",  mode: 'copy', pattern: 'snps*', saveAs: { filename -> "${sample}_$filename" }
+	publishDir "$params.outdir/$sample/8_snippy",  mode: 'copy', pattern: '*tab'
 	input:
                 tuple val(sample), path(reads1), path(reads2), path(reads1_trimmed), path(reads2_trimmed), path(kaptive_report)
 	output:
-                tuple val(sample), path("snps.tab"), path("snps.high_impact.tab"), path("snps.raw.vcf"), path("snps.filt.vcf"),  path("snps.bam"), path("snps.bam.bai"),  emit: snippy_results
+                tuple val(sample), path("*snps.tab"), path("*snps.high_impact.tab"), path("snps.raw.vcf"), path("snps.filt.vcf"),  path("snps.bam"), path("snps.bam.bai"),  emit: snippy_results
 		path("snippy.log")
+		path("*snps.high_impact.tab"), emit: snippy_impact_tab
         when:
         !params.skip_snippy
         shell:
@@ -233,8 +279,33 @@ process snippy {
 	ref_gb=`grep ${locus:0:2} !{params.reference_LPS} | cut -f2`
 	snippy --cpus !{params.snippy_threads} --force --outdir \$PWD --ref $ref_gb --R1 !{reads1_trimmed} --R2 !{reads2_trimmed}
         egrep "^CHROM|frameshift_variant|stop_gained" snps.tab > snps.high_impact.tab
+	mv snps.high_impact.tab !{sample}_snps.high_impact.tab
+	mv snps.tab !{sample}_snps.tab
 	cp .command.log snippy.log
         '''
+}
+
+process report {
+	publishDir "$params.outdir/10_report",  mode: 'copy', pattern: '*tsv'	
+	input:
+		path(snippy_files)
+	output:
+		tuple path("8_snippy_snps.high_impact.tsv"), path("10_genotype_report.tsv"), emit: genotype_report	
+	script:
+	"""
+	echo -e sampleID\\\tCHROM\\\tPOS\\\tTYPE\\\tREF\\\tALT\\\tEVIDENCE\\\tFTYPE\\\tSTRAND\\\tNT_POS\\\tAA_POS\\\tEFFECT\\\tLOCUS_TAG\\\tGENE\\\tPRODUCT > header_snippy
+	for file in `ls *_snps.high_impact.tab`; do fileName=\$(basename \$file); sample=\${fileName%%_snps.high_impact.tab}; grep -v EVIDENCE \$file | sed s/^/\${sample}\\\t/  >> 8_snippy_snps.high_impact.tsv.tmp; done
+	cat header_snippy 8_snippy_snps.high_impact.tsv.tmp > 8_snippy_snps.high_impact.tsv
+	while IFS=\$'\t' read sample chrom pos type ref alt evidence ftype strand nt_pos aa_pos effect locus_tag gene product; do
+		while IFS=\$'\t' read db_LPStype db_genotype db_isolate db_chrom db_pos db_type db_ref db_alt db_gene; do 
+			if [[ \$chrom == \$db_chrom && \$pos == \$db_pos ]]; then
+				if [[ \$sample != "sampleID" ]]; then
+					echo "sample" \$sample": found genotype" \$db_genotype "with" \$db_type >> 10_genotype_report.tsv
+				fi
+			fi
+			done < ${params.genotype_db}
+	done < 8_snippy_snps.high_impact.tsv
+	"""
 }
 
 process mlst {
@@ -242,19 +313,32 @@ process mlst {
         tag "${sample}"
         label "cpu"
         publishDir "$params.outdir/$sample/9_mlst",  mode: 'copy', pattern: "*.log", saveAs: { filename -> "${sample}_$filename" }
-        publishDir "$params.outdir/$sample/9_mlst",  mode: 'copy', pattern: '*csv', saveAs: { filename -> "${sample}_$filename" }
+	publishDir "$params.outdir/$sample/9_mlst",  mode: 'copy', pattern: '*csv'
         input:
                 tuple val(sample), path(assembly)
         output:
-                tuple val(sample), path("mlst_pmultocida_rirdc.csv"),  emit: mlst_results
                 path("mlst.log")
+		path("*_mlst.csv"), emit: mlst_results
         when:
         !params.skip_mlst
         script:
         """
-	mlst --scheme pmultocida_2 ${assembly} --quiet --csv --threads ${params.threads} > mlst_pmultocida_rirdc.csv
-        cp .command.log mlst.log
+	mlst --scheme ${params.mlst_scheme} ${assembly} --quiet --csv --threads ${params.threads} > mlst.csv
+        mv mlst.csv ${sample}_mlst.csv
+	cp .command.log mlst.log
         """
+}
+
+process summary_mlst {
+	publishDir "$params.outdir/10_report",  mode: 'copy', pattern: '*csv'
+	input:
+		path(mlst_files)
+	output:
+		path("9_mlst.csv"), emit: mlst_summary
+	script:
+	"""
+	for file in `ls *_mlst.csv`; do fileName=\$(basename \$file); sample=\${fileName%%_mlst.csv};  sed s/^/\${sample}_/ \$file >> 9_mlst.csv; done
+	"""
 }
 
 workflow {
@@ -274,17 +358,22 @@ workflow {
 	if (!params.skip_kraken) {
 		kraken(fastp.out.trimmed_fastq)
 		bracken(kraken.out.kraken_results)
+		summary_bracken(bracken.out.bracken_results.collect())
 	}
 	if (!params.skip_checkm) {
 		checkm(shovill.out.assembly_out)
+		summary_checkm(checkm.out.checkm_results.collect())
 	}
 	if (!params.skip_kaptive3) {
 		kaptive3(shovill.out.assembly_out)
+		summary_kaptive(kaptive3.out.kaptive_tsv.collect())
 	}
 	if (!params.skip_snippy) {
 		snippy(fastp.out.trimmed_fastq.join(kaptive3.out.kaptive_results))
+		report(snippy.out.snippy_impact_tab.collect())
 	}
 	if (!params.skip_mlst) {
 		mlst(shovill.out.assembly_out)
+		summary_mlst(mlst.out.mlst_results.collect())
 	}
 }
