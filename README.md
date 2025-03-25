@@ -47,7 +47,7 @@ The LPS type of the sample is obtained using the software [Kaptive](https://kapt
 
 ### 9. 	MLST typing
 
-The software [mlst](https://github.com/tseemann/mlst) is used to scan the genome assemblies against the  PubMLST typing scheme "pmultocida_2".    
+The software [mlst](https://github.com/tseemann/mlst) is used to scan the genome assemblies against the  PubMLST typing scheme "pmultocida_2" by default (RIRDC). The typing scheme can be modified by specifying the parameter --mlst_scheme (e.g. --mlst_scheme "pmultocida"). 
 
 ## Step by step user guide
 
