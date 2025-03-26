@@ -198,4 +198,10 @@ Each sample folder will contain the following folders:
     * Summary of variants in tabular format (sample_id_snps.tab)
     * Summary of high impact variants (frameshift_variant and stop_gained) in tabular format (sample_id_snps.high_impact.tab)
 * **9_mlst:** MLST typing output file (sample_id_mlst_pmultocida_rirdc.csv) 
-
+* **10_report:** Summary of results for all samples
+    * Checkm results (5_checkm_lineage_wf_results.tsv)  
+    * Kraken/Bracken taxonomy results (6_bracken_species.tsv)  
+    * Kaptive results (7_kaptive_results.tsv)  
+    * Snippy variants results (8_snippy_snps.high_impact.tsv)  
+    * MLST results (9_mlst.csv)  
+    * Genotype results summarising the variants found in the genotype database (10_genotype_report.tsv)
