@@ -296,11 +296,12 @@ process report {
 	echo -e sampleID\\\tCHROM\\\tPOS\\\tTYPE\\\tREF\\\tALT\\\tEVIDENCE\\\tFTYPE\\\tSTRAND\\\tNT_POS\\\tAA_POS\\\tEFFECT\\\tLOCUS_TAG\\\tGENE\\\tPRODUCT > header_snippy
 	for file in `ls *_snps.high_impact.tab`; do fileName=\$(basename \$file); sample=\${fileName%%_snps.high_impact.tab}; grep -v EVIDENCE \$file | sed s/^/\${sample}\\\t/  >> 8_snippy_snps.high_impact.tsv.tmp; done
 	cat header_snippy 8_snippy_snps.high_impact.tsv.tmp > 8_snippy_snps.high_impact.tsv
+	touch 10_genotype_report.tsv
 	while IFS=\$'\t' read sample chrom pos type ref alt evidence ftype strand nt_pos aa_pos effect locus_tag gene product; do
 		while IFS=\$'\t' read db_LPStype db_genotype db_isolate db_chrom db_pos db_type db_ref db_alt db_gene; do 
 			if [[ \$chrom == \$db_chrom && \$pos == \$db_pos ]]; then
 				if [[ \$sample != "sampleID" ]]; then
-					echo "sample" \$sample": found genotype" \$db_genotype "with" \$db_type >> 10_genotype_report.tsv
+					echo "sample" \$sample": found genotype" \$db_genotype "with" \$db_type "(similar to isolate" \$db_isolate")" >> 10_genotype_report.tsv
 				fi
 			fi
 			done < ${params.genotype_db}
@@ -367,10 +368,10 @@ workflow {
 	if (!params.skip_kaptive3) {
 		kaptive3(shovill.out.assembly_out)
 		summary_kaptive(kaptive3.out.kaptive_tsv.collect())
-	}
-	if (!params.skip_snippy) {
-		snippy(fastp.out.trimmed_fastq.join(kaptive3.out.kaptive_results))
-		report(snippy.out.snippy_impact_tab.collect())
+		if (!params.skip_snippy) {
+			snippy(fastp.out.trimmed_fastq.join(kaptive3.out.kaptive_results))
+			report(snippy.out.snippy_impact_tab.collect())
+		}
 	}
 	if (!params.skip_mlst) {
 		mlst(shovill.out.assembly_out)
