@@ -12,11 +12,11 @@ Bioinformatics pipeline for Pasteurella multocida LPS typing using Illumina sequ
 
 ### 1. Read trimming
 
-The raw Illumina reads are trimmed using [fastp](https://github.com/OpenGene/fastp) v0.24.0.   
+The raw Illumina reads are trimmed using [fastp](https://github.com/OpenGene/fastp) v0.24.0.     
 
 ### 2. Illumina reads quality metrics 
 
-[FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/) is used to compute Illumina read metrics for each barcode on the trimmed reads.   
+[FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/) is used to compute Illumina read metrics for each barcode on the trimmed reads. [MultiQC](https://github.com/MultiQC/MultiQC) is used to produce a report containing the FastQC results for all the samples.     
 
 ### 3. Genome assembly using Shovill
 
@@ -137,6 +137,7 @@ Some parameters can be added to the command line in order to include or skip som
 
 2. FastQC reads quality metrics:
 * `--skip_fastqc`: skip the FastQC step (default=false)
+* `--skip_summary_fastqc`: skip the summary FastQC step using MultiQC (default=false)
 
 3. Genome assembly:
 * `--skip_assembly`: skip the assembly step (default=false). Note: it is not recommended to skip assembly as many steps in the downstream processing depends on the assembly results.   
@@ -199,6 +200,7 @@ Each sample folder will contain the following folders:
     * Summary of high impact variants (frameshift_variant and stop_gained) in tabular format (sample_id_snps.high_impact.tab)
 * **9_mlst:** MLST typing output file (sample_id_mlst_pmultocida_rirdc.csv) 
 * **10_report:** Summary of results for all samples
+    * MultiQC report in html format (2_multiqc_report.html) and general statistics in tabular format (2_multiqc_general_stats.txt)   
     * Checkm results (5_checkm_lineage_wf_results.tsv)  
     * Kraken/Bracken taxonomy results (6_bracken_species.tsv)  
     * Kaptive results (7_kaptive_results.tsv)  
