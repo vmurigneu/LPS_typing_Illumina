@@ -64,14 +64,14 @@ process fastqc {
         tag "${sample}"
         label "cpu"
         publishDir "$params.outdir/$sample/2_fastqc",  mode: 'copy', pattern: "*.log", saveAs: { filename -> "${sample}_$filename" }
-        publishDir "$params.outdir/$sample/2_fastqc",  mode: 'copy', pattern: '*fastqc.zip', saveAs: { filename -> "${sample}_$filename" }
+        publishDir "$params.outdir/$sample/2_fastqc",  mode: 'copy', pattern: '*fastqc.zip'
         publishDir "$params.outdir/$sample/2_fastqc",  mode: 'copy', pattern: '*fastqc.html', saveAs: { filename -> "${sample}_$filename" }
 	input:
                 tuple val(sample), path(reads1), path(reads2), path(reads1_trimmed), path(reads2_trimmed)
         output:
                 tuple val(sample), path(reads1), path(reads2), path(reads1_trimmed), path(reads2_trimmed), emit: reads_qc
-                path("fastqc.log")
-		path("*fastqc.zip")
+		path("fastqc.log")
+		path("*fastqc.zip"), emit: fastqc_zip
                 path("*fastqc.html")
         when:
         !params.skip_fastqc
@@ -79,8 +79,29 @@ process fastqc {
         """
         fastqc -o \$PWD ${reads1_trimmed} 
 	fastqc -o \$PWD ${reads2_trimmed} 
-        cp .command.log fastqc.log
+        mv R1_trimmed_fastqc.zip ${sample}_R1_trimmed_fastqc.zip
+	mv R2_trimmed_fastqc.zip ${sample}_R2_trimmed_fastqc.zip
+	cp .command.log fastqc.log
         """
+}
+
+process summary_fastqc {
+	publishDir "$params.outdir/10_report",  mode: 'copy', pattern: '*html'
+	publishDir "$params.outdir/10_report",  mode: 'copy', pattern: '*txt'
+	input:
+		path(fastqc_files)
+	output:
+		path("2_multiqc_report.html"), emit: fastqc_summary
+		path("2_multiqc_general_stats.txt"), emit: fastqc_stats
+	when:
+	!params.skip_summary_fastqc
+	script:
+	"""
+	multiqc --fn_as_s_name .
+	cp .command.log summary_fastqc.log
+	mv multiqc_report.html 2_multiqc_report.html
+	mv multiqc_data/multiqc_general_stats.txt 2_multiqc_general_stats.txt
+	"""
 }
 
 process shovill {
@@ -351,6 +372,9 @@ workflow {
 	fastp(ch_samplesheet_illumina)
 	if (!params.skip_fastqc) {
 		fastqc(fastp.out.trimmed_fastq)
+		if (!params.skip_summary_fastqc) {
+			summary_fastqc(fastqc.out.fastqc_zip.collect())
+		}
 	}
 	shovill(ch_samplesheet_illumina)
 	if (!params.skip_quast) {
