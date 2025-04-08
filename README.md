@@ -90,9 +90,9 @@ cp -r /QRISdata/Q2313/Valentine/PIPELINES/databases ${dir}
 
 - The raw Illumina fastq files must be copied in a directory (parameter "--fqdir").
 ```
-fqdir=/scratch/project_mnt/SXXX/PIPELINE/LPS_typing_pipeline_Illumina/fastq
-mkdir $fqdir
-cp /path/to/fastq/files/ $fqdir
+fastq=/scratch/project_mnt/SXXX/PIPELINE/LPS_typing_pipeline_Illumina/fastq
+mkdir $fastq
+cp /path/to/fastq/files/ $fastq
 ```
   
 - The user must specify the path to the raw Illumina files in the samplesheet file. The samplesheet file is a comma-separated values files that defines the names of the samples with their corresponding input fastq files. The header line should match the header line in the examples below. The samplesheet can be saved in a folder named samplesheet e.g. 
