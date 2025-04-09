@@ -200,7 +200,8 @@ Each sample folder will contain the following folders:
     * Summary of high impact variants (frameshift_variant and stop_gained) in tabular format (sample_id_snps.high_impact.tab)
 * **9_mlst:** MLST typing output file (sample_id_mlst_pmultocida_rirdc.csv) 
 * **10_report:** Summary of results for all samples
-    * MultiQC report in html format (2_multiqc_report.html) and general statistics in tabular format (2_multiqc_general_stats.txt)   
+    * MultiQC report in html format (2_multiqc_report.html) and general statistics in tabular format (2_multiqc_general_stats.txt)
+    * QUAST combined report file (4_quast_report.tsv)  
     * Checkm results (5_checkm_lineage_wf_results.tsv)  
     * Kraken/Bracken taxonomy results (6_bracken_species.tsv)  
     * Kaptive results (7_kaptive_results.tsv)  
