@@ -325,7 +325,7 @@ process report {
 					echo "sample" \$sample": found genotype" \$db_genotype "with" \$db_type "(similar to isolate" \$db_isolate")" >> 10_genotype_report.tsv
 				fi
 			fi
-			done < ${params.genotype_db}
+		done < ${params.genotype_db}
 	done < 8_snippy_snps.high_impact.tsv
 	"""
 }
