@@ -129,19 +129,34 @@ process quast {
         tag "${sample}"
         label "cpu"
 	publishDir "$params.outdir/$sample/4_quast",  mode: 'copy', pattern: "*.log", saveAs: { filename -> "${sample}_$filename" }
-	publishDir "$params.outdir/$sample/4_quast",  mode: 'copy', pattern: '*tsv', saveAs: { filename -> "${sample}_$filename" }
+	publishDir "$params.outdir/$sample/4_quast",  mode: 'copy', pattern: '*tsv'
 	input:
                 tuple val(sample), path(assembly)
         output:
-		tuple val(sample), path("report.tsv"), emit: quast_results
+		path("*report.tsv"), emit: quast_results
                 path("quast.log")
         when:
         !params.skip_quast
         script:
         """
 	quast.py ${assembly} --threads ${params.threads} -o \$PWD
-        cp .command.log quast.log
+	sed "s/contigs\$/${sample}/" report.tsv > ${sample}_report.tsv
+        rm transposed_report.tsv report.tsv
+	cp .command.log quast.log
         """
+}
+
+process summary_quast {
+	publishDir "$params.outdir/10_report",  mode: 'copy', pattern: '*tsv'
+	input:
+		path(quast_files)
+	output:
+		path("4_quast_report.tsv"), emit: quast_summary	
+	script:
+	"""
+	for file in `ls *report.tsv`; do cut -f2 \$file > \$file.tmp.txt; cut -f1 \$file > rownames.txt; done
+	paste rownames.txt *tmp.txt > 4_quast_report.tsv
+	"""
 }
 
 process checkm {
@@ -379,6 +394,7 @@ workflow {
 	shovill(ch_samplesheet_illumina)
 	if (!params.skip_quast) {
 		quast(shovill.out.assembly_out)
+		summary_quast(quast.out.quast_results.collect())
 	}
 	if (!params.skip_kraken) {
 		kraken(fastp.out.trimmed_fastq)
