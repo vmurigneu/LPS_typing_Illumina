@@ -157,7 +157,7 @@ Some parameters can be added to the command line in order to include or skip som
 * `--kraken_db`: path to the Kraken2 database folder (default="../../../databases/k2_pluspf_20240605")
 
 7. LPS typing using Kaptive:
-* `--skip_kaptive3`: skip the Kaptive typing step (default=false)
+* `--skip_kaptive3`: skip the Kaptive typing step (default=false). note: it will automatically skip the variant calling step.
 * `--kaptive_db_9lps`: path to the Kaptive database file (default=""../../../databases/v1_kaptive3/9lps.gbk")
 
 8. Variant calling using Snippy:
@@ -208,3 +208,10 @@ Each sample folder will contain the following folders:
     * Snippy variants results (8_snippy_snps.high_impact.tsv)  
     * MLST results (9_mlst.csv)  
     * Genotype results summarising the variants found in the genotype database (10_genotype_report.tsv)
+
+## Running the workflow in assembly mode for other organisms
+
+The default parameters are suited for Pasteurella multocida. The LPS typing and variant calling are specific to Pasteurella multocida. Here are the paraneters to use the workflow to assemble another species:  
+* `--genome_size`: estimated genome size (default="2.3M")
+* `--mlst_scheme`: MLST typing scheme (default="pmultocida_2")
+* `--skip_kaptive3`: skip the Kaptive typing step (default=false). note: it will automatically skip the variant calling step. 
