@@ -261,7 +261,7 @@ process kaptive3 {
         tag "${sample}"
         label "cpu"
         publishDir "$params.outdir/$sample/7_kaptive_v3",  mode: 'copy', pattern: "*.log", saveAs: { filename -> "${sample}_$filename" }
-	publishDir "$params.outdir/$sample/7_kaptive_v3",  mode: 'copy', pattern: '*fna', saveAs: { filename -> "${sample}_$filename" }
+	publishDir "$params.outdir/$sample/7_kaptive_v3",  mode: 'copy', pattern: '*fna'
 	publishDir "$params.outdir/$sample/7_kaptive_v3",  mode: 'copy', pattern: '*tsv'
         input:
                 tuple val(sample), path(assembly)
@@ -275,8 +275,9 @@ process kaptive3 {
         script:
         """
 	kaptive assembly ${params.kaptive_db_9lps} ${assembly} -f \$PWD -o kaptive_results.tsv
-        cp .command.log kaptive_v3.log
 	mv kaptive_results.tsv ${sample}_kaptive_results.tsv
+	sed s/contigs/\${sample}/ contigs_kaptive_results.fna > ${sample}_contigs_kaptive_results.fna
+	cp .command.log kaptive_v3.log
         """
 }
 
