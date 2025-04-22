@@ -276,7 +276,8 @@ process kaptive3 {
         """
 	kaptive assembly ${params.kaptive_db_9lps} ${assembly} -f \$PWD -o kaptive_results.tsv
 	mv kaptive_results.tsv ${sample}_kaptive_results.tsv
-	sed s/contigs/\${sample}/ contigs_kaptive_results.fna > ${sample}_contigs_kaptive_results.fna
+	sed s/contigs/${sample}/ contigs_kaptive_results.fna > ${sample}_contigs_kaptive_results.fna
+	rm contigs_kaptive_results.fna
 	cp .command.log kaptive_v3.log
         """
 }
