@@ -379,6 +379,16 @@ process summary_mlst {
 	"""
 }
 
+process report_r {
+	publishDir "$params.outdir/10_report",  mode: 'copy', pattern: '*pdf'
+	input:
+		tuple path(images), path(report)
+	output:
+		path('LPS_typing_report.pdf')
+	script:
+		Rscript -e "rmarkdown::knit('LPS_typing_report.Rmd')"
+}
+
 workflow {
 	Channel.fromPath( "${params.samplesheet}", checkIfExists:true )
 	.splitCsv(header:true, sep:',')
