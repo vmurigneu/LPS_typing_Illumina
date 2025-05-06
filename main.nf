@@ -247,12 +247,14 @@ process summary_bracken {
         input:
                 path(bracken_files)
         output:
-                path("6_bracken_species.tsv"), emit: bracken_summary
+                tuple path("6_bracken_pasteurella_multocida_species_abundance.tsv") ,path("6_bracken_most_abundant_species.tsv"), emit: bracken_summary
         script:
         """
         echo -e sampleID\\\tname\\\ttaxonomy_id\\\ttaxonomy_lvl\\\tkraken_assigned_reads\\\tadded_reads\\\tnew_est_reads\\\tfraction_total_reads > header_bracken
-        for file in `ls *_bracken_species.tsv`; do fileName=\$(basename \$file); sample=\${fileName%%_bracken_species.tsv}; grep Pasteurella \$file | grep multocida | sed s/^/\${sample}\\\t/  >> 6_bracken_species.tsv.tmp; done
-        cat header_bracken 6_bracken_species.tsv.tmp > 6_bracken_species.tsv
+        for file in `ls *_bracken_species.tsv`; do fileName=\$(basename \$file); sample=\${fileName%%_bracken_species.tsv}; grep Pasteurella \$file | grep multocida | sed s/^/\${sample}\\\t/  >> 6_bracken_pasteurella_multocida_species_abundance.tsv.tmp; done
+        cat header_bracken 6_bracken_pasteurella_multocida_species_abundance.tsv.tmp > 6_bracken_pasteurella_multocida_species_abundance.tsv
+	for file in `ls *_bracken_species.tsv`; do fileName=\$(basename \$file); sample=\${fileName%%_bracken_species.tsv}; grep -v taxonomy_id \$file | sort -t\$'\t' -k7gr | head -1 | sed s/^/\${sample}\\\t/  >> 6_bracken_most_abundant_species.tsv.tmp; done
+	cat header_bracken 6_bracken_most_abundant_species.tsv.tmp > 6_bracken_most_abundant_species.tsv
         """
 }
 
@@ -308,7 +310,7 @@ process snippy {
 	output:
                 tuple val(sample), path("*snps.tab"), path("*snps.high_impact.tab"), path("snps.raw.vcf"), path("snps.filt.vcf"),  path("snps.bam"), path("snps.bam.bai"),  emit: snippy_results
 		path("snippy.log")
-		path("*snps.high_impact.tab"), emit: snippy_impact_tab
+		tuple path("*snps.tab"), path("*snps.high_impact.tab"), emit: snippy_impact_tab
         when:
         !params.skip_snippy
         shell:
@@ -328,22 +330,24 @@ process report {
 	input:
 		path(snippy_files)
 	output:
-		tuple path("8_snippy_snps.high_impact.tsv"), path("10_genotype_report.tsv"), emit: genotype_report	
+		tuple path("8_snippy_snps.tsv"), path("8_snippy_snps.high_impact.tsv"), path("10_genotype_report.tsv"), emit: genotype_report	
 	script:
 	"""
 	echo -e sampleID\\\tCHROM\\\tPOS\\\tTYPE\\\tREF\\\tALT\\\tEVIDENCE\\\tFTYPE\\\tSTRAND\\\tNT_POS\\\tAA_POS\\\tEFFECT\\\tLOCUS_TAG\\\tGENE\\\tPRODUCT > header_snippy
 	for file in `ls *_snps.high_impact.tab`; do fileName=\$(basename \$file); sample=\${fileName%%_snps.high_impact.tab}; grep -v EVIDENCE \$file | sed s/^/\${sample}\\\t/  >> 8_snippy_snps.high_impact.tsv.tmp; done
 	cat header_snippy 8_snippy_snps.high_impact.tsv.tmp > 8_snippy_snps.high_impact.tsv
+	for file in `ls *_snps.tab`; do fileName=\$(basename \$file); sample=\${fileName%%_snps.tab}; grep -v EVIDENCE \$file | sed s/^/\${sample}\\\t/  >> 8_snippy_snps.tsv.tmp; done
+	cat header_snippy 8_snippy_snps.tsv.tmp > 8_snippy_snps.tsv
 	touch 10_genotype_report.tsv
 	while IFS=\$'\t' read sample chrom pos type ref alt evidence ftype strand nt_pos aa_pos effect locus_tag gene product; do
 		while IFS=\$'\t' read db_LPStype db_genotype db_isolate db_chrom db_pos db_type db_ref db_alt db_gene; do 
-			if [[ \$chrom == \$db_chrom && \$pos == \$db_pos ]]; then
+			if [[ \$chrom == \$db_chrom && \$pos == \$db_pos && \$ref == \$db_ref && \$alt == \$db_alt ]]; then
 				if [[ \$sample != "sampleID" ]]; then
 					echo "sample" \$sample": found genotype" \$db_genotype "with" \$db_type "(similar to isolate" \$db_isolate")" >> 10_genotype_report.tsv
 				fi
 			fi
 		done < ${params.genotype_db}
-	done < 8_snippy_snps.high_impact.tsv
+	done < 8_snippy_snps.tsv
 	"""
 }
 
