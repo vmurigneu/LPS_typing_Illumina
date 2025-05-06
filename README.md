@@ -188,7 +188,7 @@ Each sample folder will contain the following folders:
   * Kraken2 classification report (sample_id_kraken2_report.txt)  
   * Kraken2 classification assignments for a read (sample_id_kraken2.tsv.gz)  
   * Bracken species abundance results (sample_id_bracken_species.tsv)   
-  * Bracken results in Kraken style report format (sampel_id_bracken_report.txt)  
+  * Bracken results in Kraken style report format (sample_id_bracken_report.txt)  
 * **7_kaptive_v3:** Kaptive output files, see [details](https://kaptive.readthedocs.io/en/latest/Outputs.html)
     * LPS type results (sample_id_kaptive_results.tsv)
     * LPS sequence in fasta format (sample_id_flye_polished_kaptive_results.fna)
@@ -203,11 +203,17 @@ Each sample folder will contain the following folders:
     * MultiQC report in html format (2_multiqc_report.html) and general statistics in tabular format (2_multiqc_general_stats.txt)
     * QUAST combined report file (4_quast_report.tsv)  
     * Checkm results (5_checkm_lineage_wf_results.tsv)  
-    * Kraken/Bracken taxonomy results (6_bracken_species.tsv)  
+    * Kraken/Bracken taxonomy results:  
+        - Abundance of P. multocida reads: 6_bracken_pasteurella_multocida_species_abundance.tsv
+        - Information about the most abundant species identified: 6_bracken_most_abundant_species.tsv    
     * Kaptive results (7_kaptive_results.tsv)  
-    * Snippy variants results (8_snippy_snps.high_impact.tsv)  
+    * Snippy variants results:  
+        - all variants: 8_snippy_snps.tsv 
+        - only variants predicted to have a high impact on the protein: 8_snippy_snps.high_impact.tsv 
     * MLST results (9_mlst.csv)  
-    * Genotype results summarising the variants found in the genotype database (10_genotype_report.tsv)
+    * Genotype results summarising the variants found in the genotype database (10_genotype_report.tsv). To be reported, the variant identified by snippy must be present in the genotype database with the following conditions:
+       - the variant must be identified at the same position in the reference sequence and
+       - both the reference allele and the alternate allele must be matching their corresponding allele from the variant in the database.
 
 ## Running the workflow in assembly mode for other organisms
 
