@@ -91,16 +91,16 @@ process summary_fastqc {
 	input:
 		path(fastqc_files)
 	output:
-		path("2_multiqc_report.html"), emit: fastqc_summary
-		path("2_multiqc_general_stats.txt"), emit: fastqc_stats
+		path("2_Illumina_multiqc_report.html"), emit: fastqc_summary
+		path("2_Illumina_multiqc_general_stats.txt"), emit: fastqc_stats
 	when:
 	!params.skip_summary_fastqc
 	script:
 	"""
 	multiqc --fn_as_s_name .
 	cp .command.log summary_fastqc.log
-	mv multiqc_report.html 2_multiqc_report.html
-	mv multiqc_data/multiqc_general_stats.txt 2_multiqc_general_stats.txt
+	mv multiqc_report.html 2_Illumina_multiqc_report.html
+	mv multiqc_data/multiqc_general_stats.txt 2_Illumina_multiqc_general_stats.txt
 	"""
 }
 
@@ -151,11 +151,11 @@ process summary_quast {
 	input:
 		path(quast_files)
 	output:
-		path("4_quast_report.tsv"), emit: quast_summary	
+		path("4_Illumina_quast_report.tsv"), emit: quast_summary	
 	script:
 	"""
 	for file in `ls *report.tsv`; do cut -f2 \$file > \$file.tmp.txt; cut -f1 \$file > rownames.txt; done
-	paste rownames.txt *tmp.txt > 4_quast_report.tsv
+	paste rownames.txt *tmp.txt > 4_Illumina_quast_report.tsv
 	"""
 }
 
@@ -188,12 +188,12 @@ process summary_checkm {
 	input:
 		path(checkm_files)
 	output:
-		path("5_checkm_lineage_wf_results.tsv"), emit: checkm_summary
+		path("5_Illumina_checkm_lineage_wf_results.tsv"), emit: checkm_summary
 	script:
 	"""
 	echo -e  sampleID\\\tMarker_lineage\\\tNbGenomes\\\tNbMarkers\\\tNbMarkerSets\\\t0\\\t1\\\t2\\\t3\\\t4\\\t5+\\\tCompleteness\\\tContamination\\\tStrain_heterogeneity > header_checkm
 	for file in `ls *checkm_lineage_wf_results.tsv`; do fileName=\$(basename \$file); sample=\${fileName%%_checkm_lineage_wf_results.tsv}; grep -v Bin \$file | sed s/^contigs/\${sample}/  >> 5_checkm_lineage_wf_results.tsv.tmp; done
-	cat header_checkm 5_checkm_lineage_wf_results.tsv.tmp > 5_checkm_lineage_wf_results.tsv
+	cat header_checkm 5_checkm_lineage_wf_results.tsv.tmp > 5_Illumina_checkm_lineage_wf_results.tsv
 	"""
 }
 
@@ -247,14 +247,14 @@ process summary_bracken {
         input:
                 path(bracken_files)
         output:
-                tuple path("6_bracken_pasteurella_multocida_species_abundance.tsv") ,path("6_bracken_most_abundant_species.tsv"), emit: bracken_summary
+                tuple path("6_Illumina_bracken_pasteurella_multocida_species_abundance.tsv") ,path("6_Illumina_bracken_most_abundant_species.tsv"), emit: bracken_summary
         script:
         """
         echo -e sampleID\\\tname\\\ttaxonomy_id\\\ttaxonomy_lvl\\\tkraken_assigned_reads\\\tadded_reads\\\tnew_est_reads\\\tfraction_total_reads > header_bracken
         for file in `ls *_bracken_species.tsv`; do fileName=\$(basename \$file); sample=\${fileName%%_bracken_species.tsv}; grep Pasteurella \$file | grep multocida | sed s/^/\${sample}\\\t/  >> 6_bracken_pasteurella_multocida_species_abundance.tsv.tmp; done
-        cat header_bracken 6_bracken_pasteurella_multocida_species_abundance.tsv.tmp > 6_bracken_pasteurella_multocida_species_abundance.tsv
+        cat header_bracken 6_bracken_pasteurella_multocida_species_abundance.tsv.tmp > 6_Illumina_bracken_pasteurella_multocida_species_abundance.tsv
 	for file in `ls *_bracken_species.tsv`; do fileName=\$(basename \$file); sample=\${fileName%%_bracken_species.tsv}; grep -v taxonomy_id \$file | sort -t\$'\t' -k7gr | head -1 | sed s/^/\${sample}\\\t/  >> 6_bracken_most_abundant_species.tsv.tmp; done
-	cat header_bracken 6_bracken_most_abundant_species.tsv.tmp > 6_bracken_most_abundant_species.tsv
+	cat header_bracken 6_bracken_most_abundant_species.tsv.tmp > 6_Illumina_bracken_most_abundant_species.tsv
         """
 }
 
@@ -289,12 +289,12 @@ process summary_kaptive {
 	input:
 		path(kaptive_files)
 	output:
-		path("7_kaptive_results.tsv"), emit: kaptive_summary
+		path("7_Illumina_kaptive_results.tsv"), emit: kaptive_summary
 	script:
 	"""
 	echo -e sampleID\\\tBest match locus\\\tBest match type\\\tMatch confidence\\\tProblems\\\tIdentity\\\tCoverage\\\tLength discrepancy\\\tExpected genes in locus\\\tExpected genes in locus, details\\\tMissing expected genes\\\tOther genes in locus\\\tOther genes in locus, details\\\tExpected genes outside locus\\\tExpected genes outside locus, details\\\tOther genes outside locus\\\tOther genes outside locus, details\\\tTruncated genes, details\\\tExtra genes, details >  header_kaptive3
 	for file in `ls *_kaptive_results.tsv`; do fileName=\$(basename \$file); sample=\${fileName%%_kaptive_results.tsv}; grep -v Assembly \$file | sed s/contigs/\${sample}/  >> 7_kaptive_results.tsv.tmp; done
-	cat header_kaptive3 7_kaptive_results.tsv.tmp > 7_kaptive_results.tsv
+	cat header_kaptive3 7_kaptive_results.tsv.tmp > 7_Illumina_kaptive_results.tsv
 	"""
 }
 
@@ -330,24 +330,24 @@ process report {
 	input:
 		path(snippy_files)
 	output:
-		tuple path("8_snippy_snps.tsv"), path("8_snippy_snps.high_impact.tsv"), path("10_genotype_report.tsv"), emit: genotype_report	
+		tuple path("8_Illumina_snippy_snps.tsv"), path("8_Illumina_snippy_snps.high_impact.tsv"), path("10_Illumina_genotype_report.tsv"), emit: genotype_report	
 	script:
 	"""
 	echo -e sampleID\\\tCHROM\\\tPOS\\\tTYPE\\\tREF\\\tALT\\\tEVIDENCE\\\tFTYPE\\\tSTRAND\\\tNT_POS\\\tAA_POS\\\tEFFECT\\\tLOCUS_TAG\\\tGENE\\\tPRODUCT > header_snippy
 	for file in `ls *_snps.high_impact.tab`; do fileName=\$(basename \$file); sample=\${fileName%%_snps.high_impact.tab}; grep -v EVIDENCE \$file | sed s/^/\${sample}\\\t/  >> 8_snippy_snps.high_impact.tsv.tmp; done
-	cat header_snippy 8_snippy_snps.high_impact.tsv.tmp > 8_snippy_snps.high_impact.tsv
+	cat header_snippy 8_snippy_snps.high_impact.tsv.tmp > 8_Illumina_snippy_snps.high_impact.tsv
 	for file in `ls *_snps.tab`; do fileName=\$(basename \$file); sample=\${fileName%%_snps.tab}; grep -v EVIDENCE \$file | sed s/^/\${sample}\\\t/  >> 8_snippy_snps.tsv.tmp; done
-	cat header_snippy 8_snippy_snps.tsv.tmp > 8_snippy_snps.tsv
+	cat header_snippy 8_snippy_snps.tsv.tmp > 8_Illumina_snippy_snps.tsv
 	touch 10_genotype_report.tsv
 	while IFS=\$'\t' read sample chrom pos type ref alt evidence ftype strand nt_pos aa_pos effect locus_tag gene product; do
 		while IFS=\$'\t' read db_LPStype db_genotype db_isolate db_chrom db_pos db_type db_ref db_alt db_gene; do 
 			if [[ \$chrom == \$db_chrom && \$pos == \$db_pos && \$ref == \$db_ref && \$alt == \$db_alt ]]; then
 				if [[ \$sample != "sampleID" ]]; then
-					echo "sample" \$sample": found genotype" \$db_genotype "with" \$db_type "(similar to isolate" \$db_isolate")" >> 10_genotype_report.tsv
+					echo "sample" \$sample": found genotype" \$db_genotype "with" \$db_type "(similar to isolate" \$db_isolate")" >> 10_Illumina_genotype_report.tsv
 				fi
 			fi
 		done < ${params.genotype_db}
-	done < 8_snippy_snps.tsv
+	done < 8_Illumina_snippy_snps.tsv
 	"""
 }
 
@@ -377,10 +377,10 @@ process summary_mlst {
 	input:
 		path(mlst_files)
 	output:
-		path("9_mlst.csv"), emit: mlst_summary
+		path("9_Illumina_mlst.csv"), emit: mlst_summary
 	script:
 	"""
-	for file in `ls *_mlst.csv`; do fileName=\$(basename \$file); sample=\${fileName%%_mlst.csv};  sed s/^/\${sample}_/ \$file >> 9_mlst.csv; done
+	for file in `ls *_mlst.csv`; do fileName=\$(basename \$file); sample=\${fileName%%_mlst.csv};  sed s/^/\${sample}_/ \$file >> 9_Illumina_mlst.csv; done
 	"""
 }
 
@@ -428,14 +428,14 @@ process summary_amrfinder {
 	input:
 		path(amrfinder_files)
 	output:
-		path("12_amrfinder.tsv"), emit: amrfinder_summary
+		path("12_Illumina_amrfinder.tsv"), emit: amrfinder_summary
 	script:
 	"""
 	echo -e Name\\\tProtein id\\\tContig id\\\tStart\\\tStop\\\tStrand\\\tElement symbol\\\tElement name\\\tScope\\\tType\\\tSubtype\\\tClass\\\tSubclass\\\tMethod\\\tTarget length\\\tReference sequence length\\\t% Coverage of reference\\\t% Identity to reference\\\tAlignment length\\\tClosest reference accession\\\tClosest reference name\\\tHMM accession\\\tHMM description > header_amrfinder
 	for file in ${amrfinder_files}; do 
 		tail -n +2 "\$file" >> 12_amrfinder.tsv.tmp
 	done
-	cat header_amrfinder 12_amrfinder.tsv.tmp > 12_amrfinder.tsv
+	cat header_amrfinder 12_amrfinder.tsv.tmp > 12_Illumina_amrfinder.tsv
 	"""
 }
 
