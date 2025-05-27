@@ -220,20 +220,21 @@ Each sample folder will contain the following folders:
     * Summary of high impact variants (frameshift_variant and stop_gained) in tabular format (sample_id_snps.high_impact.tab)
 * **9_mlst:** MLST typing output file (sample_id_mlst_pmultocida_rirdc.csv) 
 * **10_report:** Summary of results for all samples
-    * MultiQC report in html format (2_multiqc_report.html) and general statistics in tabular format (2_multiqc_general_stats.txt)
-    * QUAST combined report file (4_quast_report.tsv)  
-    * Checkm results (5_checkm_lineage_wf_results.tsv)  
+    * MultiQC report in html format (2_Illumina_multiqc_report.html) and general statistics in tabular format (2_Illumina_multiqc_general_stats.txt)
+    * QUAST combined report file (4_Illumina_quast_report.tsv)  
+    * Checkm results (5_Illumina_checkm_lineage_wf_results.tsv)  
     * Kraken/Bracken taxonomy results:  
-        - Abundance of P. multocida reads: 6_bracken_pasteurella_multocida_species_abundance.tsv
-        - Information about the most abundant species identified: 6_bracken_most_abundant_species.tsv    
-    * Kaptive results (7_kaptive_results.tsv)  
+        - Abundance of P. multocida reads: 6_Illumina_bracken_pasteurella_multocida_species_abundance.tsv
+        - Information about the most abundant species identified: 6_Illumina_bracken_most_abundant_species.tsv    
+    * Kaptive results (7_Illumina_kaptive_results.tsv)  
     * Snippy variants results:  
-        - all variants: 8_snippy_snps.tsv 
-        - only variants predicted to have a high impact on the protein: 8_snippy_snps.high_impact.tsv 
-    * MLST results (9_mlst.csv)  
-    * Genotype results summarising the variants found in the genotype database (10_genotype_report.tsv). To be reported, the variant identified by snippy must be present in the genotype database with the following conditions:
+        - all variants: 8_Illumina_snippy_snps.tsv 
+        - only variants predicted to have a high impact on the protein: 8_Illumina_snippy_snps.high_impact.tsv 
+    * MLST results (9_Illumina_mlst.csv)  
+    * Genotype results summarising the variants found in the genotype database (10_Illumina_genotype_report.tsv). To be reported, the variant identified by snippy must be present in the genotype database with the following conditions:
        - the variant must be identified at the same position in the reference sequence and
        - both the reference allele and the alternate allele must be matching their corresponding allele from the variant in the database.
+    * AMRFinderPlus results (12_Illumina_amrfinder.tsv)
 * **11_bakta:** Bakta genome annotation output files. The output files are described [here](https://github.com/oschwengers/bakta?tab=readme-ov-file#output).
     * Annotations & sequences in (multi) GenBank format (sample_id_bakta.gbff)  
     * Inference metrics (score, evalue, coverage, identity) for annotated accessions as TSV (sample_id_bakta.inference.tsv)  
