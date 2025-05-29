@@ -110,18 +110,44 @@ process shovill {
         label "cpu"
         label "high_memory"
 	publishDir "$params.outdir/$sample/3_assembly",  mode: 'copy', pattern: "*.log", saveAs: { filename -> "${sample}_$filename" }
-        publishDir "$params.outdir/$sample/3_assembly",  mode: 'copy', pattern: '*fa', saveAs: { filename -> "${sample}_$filename" }
+        publishDir "$params.outdir/$sample/3_assembly",  mode: 'copy', pattern: '*fa'
         input:
                 tuple val(sample), path(reads1), path(reads2)
         output:
-                tuple val(sample), path("contigs.fa"), emit: assembly_out
+                tuple val(sample), path("*contigs.fa"), emit: assembly_out
+		path("*contigs.fa"), emit: assembly_fasta
                 path("shovill.log")
 		path("*fa")
         script:
         """
         shovill --outdir \$PWD --R1 ${reads1} --R2 ${reads2} --gsize ${params.genome_size} --force --cpus ${params.shovill_threads} 
+	mv contigs.fa ${sample}_contigs.fa
+	mv contigs.gfa ${sample}_contigs.gfa
         cp .command.log shovill.log
         """
+}
+
+process summary_shovill {
+	publishDir "$params.outdir/10_report",  mode: 'copy', pattern: '*tsv'
+	input:
+		path(shovill_fasta_files)
+	output:
+		path("3_Illumina_shovill_stats.tsv"), emit: shovill_summary
+	script:
+	"""
+	echo -e "sample\tasssembly_coverage\tnb_contigs\tassembly_size" > 3_Illumina_shovill_stats.tsv
+	for file in `ls *contigs.fa`; do
+		fileName=\$(basename \$file)
+		sample=\${fileName%%_contigs.fa}
+		grep "^>" \$file | sed s/len=// | sed s/cov=// > tmp
+		total_length=`awk '{total_length+=\$2} END {print total_length}' tmp`
+		total_cov=`awk '{total_cov+=\$2*\$3} END {print total_cov}' tmp`
+		total_cov_decimal=\$(printf "%.0f" "\$total_cov")
+		mean_cov=\$(echo "scale=0; \$total_cov_decimal / \$total_length" | bc -l)
+		nb_contigs=`grep "^>" \$file | wc -l`
+		echo -e \$sample\\\t\$mean_cov\\\t\$nb_contigs\\\t\$total_length  >> 3_Illumina_shovill_stats.tsv
+	done
+	"""
 }
 
 process quast {
@@ -140,7 +166,7 @@ process quast {
         script:
         """
 	quast.py ${assembly} --threads ${params.threads} -o \$PWD
-	sed "s/contigs\$/${sample}/" report.tsv > ${sample}_report.tsv
+	sed "s/_contigs\$//" report.tsv > ${sample}_report.tsv
         rm transposed_report.tsv report.tsv
 	cp .command.log quast.log
         """
@@ -192,7 +218,7 @@ process summary_checkm {
 	script:
 	"""
 	echo -e  sampleID\\\tMarker_lineage\\\tNbGenomes\\\tNbMarkers\\\tNbMarkerSets\\\t0\\\t1\\\t2\\\t3\\\t4\\\t5+\\\tCompleteness\\\tContamination\\\tStrain_heterogeneity > header_checkm
-	for file in `ls *checkm_lineage_wf_results.tsv`; do fileName=\$(basename \$file); sample=\${fileName%%_checkm_lineage_wf_results.tsv}; grep -v Bin \$file | sed s/^contigs/\${sample}/  >> 5_checkm_lineage_wf_results.tsv.tmp; done
+	for file in `ls *checkm_lineage_wf_results.tsv`; do fileName=\$(basename \$file); sample=\${fileName%%_checkm_lineage_wf_results.tsv}; grep -v Bin \$file | sed s/_contigs//  >> 5_checkm_lineage_wf_results.tsv.tmp; done
 	cat header_checkm 5_checkm_lineage_wf_results.tsv.tmp > 5_Illumina_checkm_lineage_wf_results.tsv
 	"""
 }
@@ -278,8 +304,8 @@ process kaptive3 {
         """
 	kaptive assembly ${params.kaptive_db_9lps} ${assembly} -f \$PWD -o kaptive_results.tsv
 	mv kaptive_results.tsv ${sample}_kaptive_results.tsv
-	sed s/contigs/${sample}/ contigs_kaptive_results.fna > ${sample}_contigs_kaptive_results.fna
-	rm contigs_kaptive_results.fna
+	sed s/_contigs// ${sample}_contigs_kaptive_results.fna > ${sample}_kaptive_results.fna
+	rm ${sample}_contigs_kaptive_results.fna
 	cp .command.log kaptive_v3.log
         """
 }
@@ -293,7 +319,7 @@ process summary_kaptive {
 	script:
 	"""
 	echo -e sampleID\\\tBest match locus\\\tBest match type\\\tMatch confidence\\\tProblems\\\tIdentity\\\tCoverage\\\tLength discrepancy\\\tExpected genes in locus\\\tExpected genes in locus, details\\\tMissing expected genes\\\tOther genes in locus\\\tOther genes in locus, details\\\tExpected genes outside locus\\\tExpected genes outside locus, details\\\tOther genes outside locus\\\tOther genes outside locus, details\\\tTruncated genes, details\\\tExtra genes, details >  header_kaptive3
-	for file in `ls *_kaptive_results.tsv`; do fileName=\$(basename \$file); sample=\${fileName%%_kaptive_results.tsv}; grep -v Assembly \$file | sed s/contigs/\${sample}/  >> 7_kaptive_results.tsv.tmp; done
+	for file in `ls *_kaptive_results.tsv`; do fileName=\$(basename \$file); sample=\${fileName%%_kaptive_results.tsv}; grep -v Assembly \$file | sed s/_contigs//  >> 7_kaptive_results.tsv.tmp; done
 	cat header_kaptive3 7_kaptive_results.tsv.tmp > 7_Illumina_kaptive_results.tsv
 	"""
 }
@@ -367,7 +393,7 @@ process mlst {
         script:
         """
 	mlst --scheme ${params.mlst_scheme} ${assembly} --quiet --csv --threads ${params.threads} > mlst.csv
-        mv mlst.csv ${sample}_mlst.csv
+        sed  s/_contigs.fa// mlst.csv > ${sample}_mlst.csv
 	cp .command.log mlst.log
         """
 }
@@ -380,7 +406,7 @@ process summary_mlst {
 		path("9_Illumina_mlst.csv"), emit: mlst_summary
 	script:
 	"""
-	for file in `ls *_mlst.csv`; do fileName=\$(basename \$file); sample=\${fileName%%_mlst.csv};  sed s/^/\${sample}_/ \$file >> 9_Illumina_mlst.csv; done
+	for file in `ls *_mlst.csv`; do fileName=\$(basename \$file); sample=\${fileName%%_mlst.csv}; cat \$file >> 9_Illumina_mlst.csv; done
 	"""
 }
 
@@ -453,6 +479,7 @@ workflow {
 		}
 	}
 	shovill(ch_samplesheet_illumina)
+	summary_shovill(shovill.out.assembly_fasta.collect())
 	if (!params.skip_quast) {
 		quast(shovill.out.assembly_out)
 		summary_quast(quast.out.quast_results.collect())
