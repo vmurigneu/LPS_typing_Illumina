@@ -211,7 +211,7 @@ Each sample folder will contain the following folders:
   * Bracken results in Kraken style report format (sample_id_bracken_report.txt)  
 * **7_kaptive_v3:** Kaptive output files, see [details](https://kaptive.readthedocs.io/en/latest/Outputs.html)
     * LPS type results (sample_id_kaptive_results.tsv)
-    * LPS sequence in fasta format (sample_id_flye_polished_kaptive_results.fna)
+    * LPS sequence in fasta format (sample_id_kaptive_results.fna)
 * **8_snippy:** Mapping files and variant calling results from Snippy, see [details](https://github.com/tseemann/snippy?tab=readme-ov-file#output-files):
     * BWA mapping file in bam format (sample_id_snps.bam_mapped.bam and .bai index). 
     * Unfiltered variants from Freebayes in VCF format (sample_id_clair_snps.raw.vcf) 
@@ -221,6 +221,7 @@ Each sample folder will contain the following folders:
 * **9_mlst:** MLST typing output file (sample_id_mlst_pmultocida_rirdc.csv) 
 * **10_report:** Summary of results for all samples
     * MultiQC report in html format (2_Illumina_multiqc_report.html) and general statistics in tabular format (2_Illumina_multiqc_general_stats.txt)
+    * Shovill assembly statistics: assembly coverage, number of contigs, assembly size (3_Illumina_shovill_stats.tsv) 
     * QUAST combined report file (4_Illumina_quast_report.tsv)  
     * Checkm results (5_Illumina_checkm_lineage_wf_results.tsv)  
     * Kraken/Bracken taxonomy results:  
