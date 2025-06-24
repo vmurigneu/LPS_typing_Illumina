@@ -178,6 +178,8 @@ process summary_quast {
 		path(quast_files)
 	output:
 		path("4_Illumina_quast_report.tsv"), emit: quast_summary	
+	when:
+	!params.skip_quast
 	script:
 	"""
 	for file in `ls *report.tsv`; do cut -f2 \$file > \$file.tmp.txt; cut -f1 \$file > rownames.txt; done
@@ -215,6 +217,8 @@ process summary_checkm {
 		path(checkm_files)
 	output:
 		path("5_Illumina_checkm_lineage_wf_results.tsv"), emit: checkm_summary
+	when:
+	!params.skip_checkm
 	script:
 	"""
 	echo -e  sampleID\\\tMarker_lineage\\\tNbGenomes\\\tNbMarkers\\\tNbMarkerSets\\\t0\\\t1\\\t2\\\t3\\\t4\\\t5+\\\tCompleteness\\\tContamination\\\tStrain_heterogeneity > header_checkm
@@ -274,7 +278,9 @@ process summary_bracken {
                 path(bracken_files)
         output:
                 tuple path("6_Illumina_bracken_pasteurella_multocida_species_abundance.tsv") ,path("6_Illumina_bracken_most_abundant_species.tsv"), emit: bracken_summary
-        script:
+        when:
+	!params.skip_kraken
+	script:
         """
         echo -e sampleID\\\tname\\\ttaxonomy_id\\\ttaxonomy_lvl\\\tkraken_assigned_reads\\\tadded_reads\\\tnew_est_reads\\\tfraction_total_reads > header_bracken
         for file in `ls *_bracken_species.tsv`; do fileName=\$(basename \$file); sample=\${fileName%%_bracken_species.tsv}; grep Pasteurella \$file | grep multocida | sed s/^/\${sample}\\\t/  >> 6_bracken_pasteurella_multocida_species_abundance.tsv.tmp; done
@@ -316,6 +322,8 @@ process summary_kaptive {
 		path(kaptive_files)
 	output:
 		path("7_Illumina_kaptive_results.tsv"), emit: kaptive_summary
+	when:
+	!params.skip_kaptive3
 	script:
 	"""
 	echo -e sampleID\\\tBest match locus\\\tBest match type\\\tMatch confidence\\\tProblems\\\tIdentity\\\tCoverage\\\tLength discrepancy\\\tExpected genes in locus\\\tExpected genes in locus, details\\\tMissing expected genes\\\tOther genes in locus\\\tOther genes in locus, details\\\tExpected genes outside locus\\\tExpected genes outside locus, details\\\tOther genes outside locus\\\tOther genes outside locus, details\\\tTruncated genes, details\\\tExtra genes, details >  header_kaptive3
@@ -357,6 +365,8 @@ process report {
 		path(snippy_files)
 	output:
 		tuple path("8_Illumina_snippy_snps.tsv"), path("8_Illumina_snippy_snps.high_impact.tsv"), path("10_Illumina_genotype_report.tsv"), emit: genotype_report	
+	when:
+	!params.skip_snippy
 	script:
 	"""
 	echo -e sampleID\\\tCHROM\\\tPOS\\\tTYPE\\\tREF\\\tALT\\\tEVIDENCE\\\tFTYPE\\\tSTRAND\\\tNT_POS\\\tAA_POS\\\tEFFECT\\\tLOCUS_TAG\\\tGENE\\\tPRODUCT > header_snippy
@@ -404,6 +414,8 @@ process summary_mlst {
 		path(mlst_files)
 	output:
 		path("9_Illumina_mlst.csv"), emit: mlst_summary
+	when:
+	!params.skip_mlst
 	script:
 	"""
 	for file in `ls *_mlst.csv`; do fileName=\$(basename \$file); sample=\${fileName%%_mlst.csv}; cat \$file >> 9_Illumina_mlst.csv; done
@@ -413,20 +425,18 @@ process summary_mlst {
 process bakta {
 	cpus "${params.bakta_threads}"
 	tag "${sample}"
-	publishDir "$params.outdir/$sample/11_bakta",  mode: 'copy', pattern: "*.log", saveAs: { filename -> "${sample}_$filename" }
-	publishDir "$params.outdir/$sample/11_bakta",  mode: 'copy', pattern: '*gbff'
-	publishDir "$params.outdir/$sample/11_bakta",  mode: 'copy', pattern: '*tsv'
-	publishDir "$params.outdir/$sample/11_bakta",  mode: 'copy', pattern: '*tsv'
+	publishDir "$params.outdir/$sample/11_bakta",  mode: 'copy', pattern: "*.log"
+	publishDir "$params.outdir/$sample/11_bakta",  mode: 'copy', pattern: '*bakta*'
 	input:
 		tuple val(sample), path(assembly)
 	output:
-		tuple path("*.gbff"), path("*.tsv"), path("*.txt"), emit: bakta_results
+		path("*bakta*")
 		path("bakta.log")
 	when:
 	!params.skip_bakta
 	script:
 	"""
-	bakta --db ${params.bakta_db} --threads ${params.bakta_threads} --prefix ${sample}_bakta --proteins ${params.bakta_protein_ref} --output \$PWD/ ${params.bakta_args} ${assembly} 
+	bakta --db ${params.bakta_db} --threads ${params.bakta_threads} --prefix ${sample}_bakta --output \$PWD/ ${params.bakta_args} ${assembly}
 	cp .command.log bakta.log
 	"""
 }
@@ -455,6 +465,8 @@ process summary_amrfinder {
 		path(amrfinder_files)
 	output:
 		path("12_Illumina_amrfinder.tsv"), emit: amrfinder_summary
+	when:
+	!params.skip_amrfinder
 	script:
 	"""
 	echo -e Name\\\tProtein id\\\tContig id\\\tStart\\\tStop\\\tStrand\\\tElement symbol\\\tElement name\\\tScope\\\tType\\\tSubtype\\\tClass\\\tSubclass\\\tMethod\\\tTarget length\\\tReference sequence length\\\t% Coverage of reference\\\t% Identity to reference\\\tAlignment length\\\tClosest reference accession\\\tClosest reference name\\\tHMM accession\\\tHMM description > header_amrfinder
@@ -472,44 +484,24 @@ workflow {
 	.set { ch_samplesheet_illumina }
 	ch_samplesheet_illumina.view()
 	fastp(ch_samplesheet_illumina)
-	if (!params.skip_fastqc) {
-		fastqc(fastp.out.trimmed_fastq)
-		if (!params.skip_summary_fastqc) {
-			summary_fastqc(fastqc.out.fastqc_zip.collect())
-		}
-	}
+	fastqc(fastp.out.trimmed_fastq)
+	summary_fastqc(fastqc.out.fastqc_zip.collect())
 	shovill(ch_samplesheet_illumina)
 	summary_shovill(shovill.out.assembly_fasta.collect())
-	if (!params.skip_quast) {
-		quast(shovill.out.assembly_out)
-		summary_quast(quast.out.quast_results.collect())
-	}
-	if (!params.skip_kraken) {
-		kraken(fastp.out.trimmed_fastq)
-		bracken(kraken.out.kraken_results)
-		summary_bracken(bracken.out.bracken_results.collect())
-	}
-	if (!params.skip_checkm) {
-		checkm(shovill.out.assembly_out)
-		summary_checkm(checkm.out.checkm_results.collect())
-	}
-	if (!params.skip_kaptive3) {
-		kaptive3(shovill.out.assembly_out)
-		summary_kaptive(kaptive3.out.kaptive_tsv.collect())
-		if (!params.skip_snippy) {
-			snippy(fastp.out.trimmed_fastq.join(kaptive3.out.kaptive_results))
-			report(snippy.out.snippy_impact_tab.collect())
-		}
-	}
-	if (!params.skip_mlst) {
-		mlst(shovill.out.assembly_out)
-		summary_mlst(mlst.out.mlst_results.collect())
-	}
-	if (!params.skip_bakta) {
-		bakta(shovill.out.assembly_out)
-	}
-	if (!params.skip_amrfinder) {
-		amrfinder(shovill.out.assembly_out)
-		summary_amrfinder(amrfinder.out.amrfinder_results.collect())
-	}
+	quast(shovill.out.assembly_out)
+	summary_quast(quast.out.quast_results.collect())
+	kraken(fastp.out.trimmed_fastq)
+	bracken(kraken.out.kraken_results)
+	summary_bracken(bracken.out.bracken_results.collect())
+	checkm(shovill.out.assembly_out)
+	summary_checkm(checkm.out.checkm_results.collect())
+	kaptive3(shovill.out.assembly_out)
+	summary_kaptive(kaptive3.out.kaptive_tsv.collect())
+	snippy(fastp.out.trimmed_fastq.join(kaptive3.out.kaptive_results))
+	report(snippy.out.snippy_impact_tab.collect())
+	mlst(shovill.out.assembly_out)
+	summary_mlst(mlst.out.mlst_results.collect())
+	bakta(shovill.out.assembly_out)
+	amrfinder(shovill.out.assembly_out)
+	summary_amrfinder(amrfinder.out.amrfinder_results.collect())
 }
