@@ -181,8 +181,7 @@ Some parameters can be added to the command line in order to include or skip som
 * `--skip_bakta`: skip the genome annotation step (default=false)
 * `--bakta_threads`: number of threads for the Bakta step (default=8)  
 * `--bakta_db`: path to the Bakta database files (default="../../../databases/bakta/db")
-* `--bakta_protein_ref`: path to the trusted protein sequences file for CDS annotation in fasta or GenBank format (CDS features) (default="../../../databases/LPS/NC_002663_LPS.gb")  
-* `--bakta_args`: Bakta optional parameters (default="")  
+* `--bakta_args`: Bakta optional parameters (default="--proteins ../../../databases/LPS/NC_002663_LPS.gb")  
 
 12. AMR genes identification using AMRFinderPlus:
 * `--skip_amrfinder`: skip the AMR genes identification step (default=false)
@@ -236,7 +235,7 @@ Each sample folder will contain the following folders:
        - the variant must be identified at the same position in the reference sequence and
        - both the reference allele and the alternate allele must be matching their corresponding allele from the variant in the database.
     * AMRFinderPlus results (12_Illumina_amrfinder.tsv)
-* **11_bakta:** Bakta genome annotation output files. The output files are described [here](https://github.com/oschwengers/bakta?tab=readme-ov-file#output).
+* **11_bakta:** Bakta genome annotation output files. The output files are described [here](https://github.com/oschwengers/bakta?tab=readme-ov-file#output) and include:  
     * Annotations & sequences in (multi) GenBank format (sample_id_bakta.gbff)  
     * Inference metrics (score, evalue, coverage, identity) for annotated accessions as TSV (sample_id_bakta.inference.tsv)  
     * Annotation summary in text format (sample_id_bakta.txt)    
