@@ -346,7 +346,7 @@ process snippy {
 		path("snippy.log")
 		tuple path("*snps.tab"), path("*snps.high_impact.tab"), emit: snippy_impact_tab
         when:
-        !params.skip_snippy
+        !params.skip_snippy && !params.skip_kaptive3
         shell:
         '''
 	locus=`tail -1 !{kaptive_report} | cut -f3`
@@ -366,7 +366,7 @@ process report {
 	output:
 		tuple path("8_Illumina_snippy_snps.tsv"), path("8_Illumina_snippy_snps.high_impact.tsv"), path("10_Illumina_genotype_report.tsv"), emit: genotype_report	
 	when:
-	!params.skip_snippy
+	!params.skip_snippy && !params.skip_kaptive3
 	script:
 	"""
 	echo -e sampleID\\\tCHROM\\\tPOS\\\tTYPE\\\tREF\\\tALT\\\tEVIDENCE\\\tFTYPE\\\tSTRAND\\\tNT_POS\\\tAA_POS\\\tEFFECT\\\tLOCUS_TAG\\\tGENE\\\tPRODUCT > header_snippy
