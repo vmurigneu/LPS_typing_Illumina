@@ -49,6 +49,12 @@ The LPS type of the sample is obtained using the software [Kaptive](https://kapt
 
 The software [mlst](https://github.com/tseemann/mlst) is used to scan the genome assemblies against the  PubMLST typing scheme "pmultocida_2" by default (RIRDC). The typing scheme can be modified by specifying the parameter --mlst_scheme (e.g. --mlst_scheme "pmultocida"). 
 
+### 10.  LPS subtype report
+
+The pipeline generates a subtype report file (10_Illumina_subtype_report.tsv) summarising the variants found in the subtype database. To be reported, the variant identified by snippy must be present in the subtype database with the following conditions:  
+- the variant must be identified at the same position in the same reference sequence and
+- both the reference allele and the alternate allele must be matching their corresponding allele from the variant in the database.  
+
 ### 11. 	Genome annotation using Bakta
 
 The software [Bakta](https://github.com/oschwengers/bakta) is used to annotate the genome assemblies. The default database is v6.0 from 2025-02-24, https://zenodo.org/records/14916843.    
