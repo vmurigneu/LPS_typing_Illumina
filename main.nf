@@ -364,7 +364,7 @@ process report {
 	input:
 		path(snippy_files)
 	output:
-		tuple path("8_Illumina_snippy_snps.tsv"), path("8_Illumina_snippy_snps.high_impact.tsv"), path("10_Illumina_genotype_report.tsv"), emit: genotype_report	
+		tuple path("8_Illumina_snippy_snps.tsv"), path("8_Illumina_snippy_snps.high_impact.tsv"), path("10_Illumina_subtype_report.tsv"), emit: subtype_report	
 	when:
 	!params.skip_snippy && !params.skip_kaptive3
 	script:
@@ -374,15 +374,15 @@ process report {
 	cat header_snippy 8_snippy_snps.high_impact.tsv.tmp > 8_Illumina_snippy_snps.high_impact.tsv
 	for file in `ls *_snps.tab`; do fileName=\$(basename \$file); sample=\${fileName%%_snps.tab}; grep -v EVIDENCE \$file | sed s/^/\${sample}\\\t/  >> 8_snippy_snps.tsv.tmp; done
 	cat header_snippy 8_snippy_snps.tsv.tmp > 8_Illumina_snippy_snps.tsv
-	touch 10_genotype_report.tsv
+	touch 10_subtype_report.tsv
 	while IFS=\$'\t' read sample chrom pos type ref alt evidence ftype strand nt_pos aa_pos effect locus_tag gene product; do
-		while IFS=\$'\t' read db_LPStype db_genotype db_isolate db_chrom db_pos db_type db_ref db_alt db_gene; do 
+		while IFS=\$'\t' read db_LPStype db_subtype db_isolate db_chrom db_pos db_type db_ref db_alt db_gene; do 
 			if [[ \$chrom == \$db_chrom && \$pos == \$db_pos && \$ref == \$db_ref && \$alt == \$db_alt ]]; then
 				if [[ \$sample != "sampleID" ]]; then
-					echo "sample" \$sample": found genotype" \$db_genotype "with" \$db_type "(similar to isolate" \$db_isolate")" >> 10_Illumina_genotype_report.tsv
+					echo "sample" \$sample": found subtype" \$db_subtype "with" \$db_type "(similar to isolate" \$db_isolate")" >> 10_Illumina_subtype_report.tsv
 				fi
 			fi
-		done < ${params.genotype_db}
+		done < ${params.subtype_db}
 	done < 8_Illumina_snippy_snps.tsv
 	"""
 }
