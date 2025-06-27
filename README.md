@@ -20,7 +20,7 @@ The raw Illumina reads are trimmed using [fastp](https://github.com/OpenGene/fas
 
 ### 3. Genome assembly using Shovill
 
-The Illumina paired-end reads are assembled using the software [Shovill](https://github.com/tseemann/shovill) v1.1.0. Shovill is a pipeline which uses the SPAdes genome assembler at its core.    
+The Illumina paired-end reads are assembled using the software [Shovill](https://github.com/tseemann/shovill) v1.1.0. Shovill is a pipeline which uses the SPAdes genome assembler at its core. The pipeline uses a default minimum contig length of 200 and a default minimum contig coverage of 10.     
 
 ### 4. 	Assembly quality assessment with QUAST
 
@@ -156,6 +156,7 @@ Some parameters can be added to the command line in order to include or skip som
 3. Genome assembly:
 * `--skip_assembly`: skip the assembly step (default=false). Note: it is not recommended to skip assembly as many steps in the downstream processing depends on the assembly results.   
 * `--shovill_threads`: number of threads for the assembly (default=4)
+* `--shovill_args`: Shovill optional parameters (default="--minlen 200 --mincov 10")
 * `--genome_size`: estimated genome size (default="2.3M")
 
 4. Assembly quality assessment with QUAST:
