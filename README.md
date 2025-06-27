@@ -166,16 +166,19 @@ Some parameters can be added to the command line in order to include or skip som
 
 7. LPS typing using Kaptive:
 * `--skip_kaptive3`: skip the Kaptive typing step (default=false). note: it will automatically skip the variant calling step.
-* `--kaptive_db_9lps`: path to the Kaptive database file (default=""../../../databases/v1_kaptive3/9lps.gbk")
+* `--kaptive_db_9lps`: path to the Kaptive database file (default=""../../../databases/kaptive3_LPS_db_v1/9lps.gbk")
 
 8. Variant calling using Snippy:
 * `--skip_snippy`: skip the variant calling Snippy pipeline (default=false)
 * `--snippy_threads`: number of threads for the Snippy pipeline (default=6)
-* `--reference_LPS`: path to the file summarising the reference LPS sequence files (default="../../../databases/reference_LPS.txt")
+* `--reference_LPS`: path to the file summarising the reference LPS sequence files (default="../../../databases/LPS/reference_LPS.txt")
 
 9. MLST typing:
 * `--skip_mlst`: skip the MLST typing step (default=false)
 * `--mlst_scheme`: MLST typing scheme (default="pmultocida_2")
+
+10. Report:
+* `--subtype_db`: path to the subtype database file (default="../../../databases/LPS/LPS_subtype_database_v1.txt")
 
 11. Genome annotation using Bakta:
 * `--skip_bakta`: skip the genome annotation step (default=false)
@@ -231,7 +234,7 @@ Each sample folder will contain the following folders:
         - all variants: 8_Illumina_snippy_snps.tsv 
         - only variants predicted to have a high impact on the protein: 8_Illumina_snippy_snps.high_impact.tsv 
     * MLST results (9_Illumina_mlst.csv)  
-    * Genotype results summarising the variants found in the genotype database (10_Illumina_genotype_report.tsv). To be reported, the variant identified by snippy must be present in the genotype database with the following conditions:
+    * Subtype results summarising the variants found in the subtype database (10_Illumina_subtype_report.tsv). To be reported, the variant identified by snippy must be present in the subtype database with the following conditions:
        - the variant must be identified at the same position in the reference sequence and
        - both the reference allele and the alternate allele must be matching their corresponding allele from the variant in the database.
     * AMRFinderPlus results (12_Illumina_amrfinder.tsv)
