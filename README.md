@@ -156,7 +156,7 @@ Some parameters can be added to the command line in order to include or skip som
 3. Genome assembly:
 * `--skip_assembly`: skip the assembly step (default=false). Note: it is not recommended to skip assembly as many steps in the downstream processing depends on the assembly results.   
 * `--shovill_threads`: number of threads for the assembly (default=4)
-* `--shovill_args`: Shovill optional parameters (default="--minlen 200 --mincov 10")
+* `--shovill_args`: Shovill optional parameters (default="")
 * `--genome_size`: estimated genome size (default="2.3M")
 
 4. Assembly quality assessment with QUAST:
@@ -178,6 +178,7 @@ Some parameters can be added to the command line in order to include or skip som
 8. Variant calling using Snippy:
 * `--skip_snippy`: skip the variant calling Snippy pipeline (default=false)
 * `--snippy_threads`: number of threads for the Snippy pipeline (default=6)
+* `--snippy_args`: Snippy optional parameters (default="")
 * `--reference_LPS`: path to the file summarising the reference LPS sequence files (default="../../../databases/LPS/reference_LPS.txt")
 
 9. MLST typing:
