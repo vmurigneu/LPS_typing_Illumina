@@ -291,7 +291,8 @@ process summary_bracken {
 }
 
 process kaptive3 {
-        cpus "${params.threads}"
+        errorStrategy 'ignore'
+	cpus "${params.threads}"
         tag "${sample}"
         label "cpu"
         publishDir "$params.outdir/$sample/7_kaptive_v3",  mode: 'copy', pattern: "*.log", saveAs: { filename -> "${sample}_$filename" }
@@ -333,6 +334,7 @@ process summary_kaptive {
 }
 
 process snippy {
+	errorStrategy 'ignore'
         cpus "${params.snippy_threads}"
         tag "${sample}"
         label "cpu"
@@ -351,7 +353,7 @@ process snippy {
         '''
 	locus=`tail -1 !{kaptive_report} | cut -f3`
 	ref_gb=`grep ${locus:0:2} !{params.reference_LPS} | cut -f2`
-	snippy --cpus !{params.snippy_threads} --force --outdir \$PWD --ref $ref_gb --R1 !{reads1_trimmed} --R2 !{reads2_trimmed}
+	snippy --cpus !{params.snippy_threads} --force --outdir \$PWD --ref $ref_gb --R1 !{reads1_trimmed} --R2 !{reads2_trimmed} ${params.snippy_args}
         egrep "^CHROM|frameshift_variant|stop_gained" snps.tab > snps.high_impact.tab
 	mv snps.high_impact.tab !{sample}_snps.high_impact.tab
 	mv snps.tab !{sample}_snps.tab
