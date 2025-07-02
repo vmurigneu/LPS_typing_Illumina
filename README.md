@@ -16,11 +16,11 @@ The raw Illumina reads are trimmed using [fastp](https://github.com/OpenGene/fas
 
 ### 2. Illumina reads quality metrics 
 
-[FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/) is used to compute Illumina read metrics for each barcode on the trimmed reads. [MultiQC](https://github.com/MultiQC/MultiQC) is used to produce a report containing the FastQC results for all the samples.     
+[FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/) v0.12.1 is used to compute Illumina read metrics for each barcode on the trimmed reads. [MultiQC](https://github.com/MultiQC/MultiQC) v.1.28 is used to produce a report containing the FastQC results for all the samples.     
 
 ### 3. Genome assembly using Shovill
 
-The Illumina paired-end reads are assembled using the software [Shovill](https://github.com/tseemann/shovill) v1.1.0. Shovill is a pipeline which uses the SPAdes genome assembler at its core. The pipeline uses a default minimum contig length of 200 and a default minimum contig coverage of 10.     
+The Illumina paired-end reads are assembled using the software [Shovill](https://github.com/tseemann/shovill) v1.1.0. Shovill is a pipeline which uses the SPAdes genome assembler at its core.       
 
 ### 4. 	Assembly quality assessment with QUAST
 
@@ -242,9 +242,17 @@ Each sample folder will contain the following folders:
         - all variants: 8_Illumina_snippy_snps.tsv 
         - only variants predicted to have a high impact on the protein: 8_Illumina_snippy_snps.high_impact.tsv 
     * MLST results (9_Illumina_mlst.csv)  
-    * Subtype results summarising the variants found in the subtype database (10_Illumina_subtype_report.tsv). To be reported, the variant identified by snippy must be present in the subtype database with the following conditions:
-       - the variant must be identified at the same position in the reference sequence and
-       - both the reference allele and the alternate allele must be matching their corresponding allele from the variant in the database.
+    * Subtype results summarising the variants found in the subtype database (10_Illumina_subtype_report.tsv). The columns in this file represents:
+        - SAMPLE: sample identifier (sample_id in the samplesheet)  
+        - TYPE: LPS type assigned by Kaptive  
+        - SUBTYPE: LPS subtype assigned by the pipeline (using the subtype database)    
+        - VARTYPE: description of the variant   
+        - ISOLATE_DATABASE: reference isolate from the subtype database that contained that variant  
+        - CHROM: name of the reference sequence for the LPS locus type  
+        - POS: variant position in the reference sequence for the LPS locus type
+        - REF: reference allele sequence present in the LPS reference sequence  
+        - ALT: alternate allele sequence identified in the sample  
+        - GENE: gene containing the variant  
     * AMRFinderPlus results (12_Illumina_amrfinder.tsv)
 * **11_bakta:** Bakta genome annotation output files. The output files are described [here](https://github.com/oschwengers/bakta?tab=readme-ov-file#output) and include:  
     * Annotations & sequences in (multi) GenBank format (sample_id_bakta.gbff)  
