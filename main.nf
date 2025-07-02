@@ -376,12 +376,12 @@ process report {
 	cat header_snippy 8_snippy_snps.high_impact.tsv.tmp > 8_Illumina_snippy_snps.high_impact.tsv
 	for file in `ls *_snps.tab`; do fileName=\$(basename \$file); sample=\${fileName%%_snps.tab}; grep -v EVIDENCE \$file | sed s/^/\${sample}\\\t/  >> 8_snippy_snps.tsv.tmp; done
 	cat header_snippy 8_snippy_snps.tsv.tmp > 8_Illumina_snippy_snps.tsv
-	touch 10_subtype_report.tsv
+	echo -e SAMPLE\\\tTYPE\\\tSUBTYPE\\\tVARTYPE\\\tISOLATE_DATABASE\\\tCHROM\\\tPOS\\\tREF\\\tALT\\\tGENE >> 10_Illumina_subtype_report.tsv
 	while IFS=\$'\t' read sample chrom pos type ref alt evidence ftype strand nt_pos aa_pos effect locus_tag gene product; do
 		while IFS=\$'\t' read db_LPStype db_subtype db_isolate db_chrom db_pos db_type db_ref db_alt db_gene; do 
 			if [[ \$chrom == \$db_chrom && \$pos == \$db_pos && \$ref == \$db_ref && \$alt == \$db_alt ]]; then
 				if [[ \$sample != "sampleID" ]]; then
-					echo "sample" \$sample": found subtype" \$db_subtype "with" \$db_type "(similar to isolate" \$db_isolate")" >> 10_Illumina_subtype_report.tsv
+					echo \$sample"\t"\$db_LPStype"\t"\$db_subtype"\t"\$db_type"\t"\$db_isolate"\t"\$db_chrom"\t"\$db_pos"\t"\$db_ref"\t"\$db_alt"\t"\$db_gene  >> 10_Illumina_subtype_report.tsv
 				fi
 			fi
 		done < ${params.subtype_db}
