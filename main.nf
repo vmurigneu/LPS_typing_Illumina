@@ -365,6 +365,7 @@ process report {
 	publishDir "$params.outdir/10_report",  mode: 'copy', pattern: '*tsv'	
 	input:
 		path(snippy_files)
+		path(kaptive_summary)
 	output:
 		tuple path("8_Illumina_snippy_snps.tsv"), path("8_Illumina_snippy_snps.high_impact.tsv"), path("10_Illumina_subtype_report.tsv"), emit: subtype_report	
 	when:
@@ -376,16 +377,24 @@ process report {
 	cat header_snippy 8_snippy_snps.high_impact.tsv.tmp > 8_Illumina_snippy_snps.high_impact.tsv
 	for file in `ls *_snps.tab`; do fileName=\$(basename \$file); sample=\${fileName%%_snps.tab}; grep -v EVIDENCE \$file | sed s/^/\${sample}\\\t/  >> 8_snippy_snps.tsv.tmp; done
 	cat header_snippy 8_snippy_snps.tsv.tmp > 8_Illumina_snippy_snps.tsv
-	echo -e SAMPLE\\\tTYPE\\\tSUBTYPE\\\tVARTYPE\\\tISOLATE_DATABASE\\\tCHROM\\\tPOS\\\tREF\\\tALT\\\tGENE >> 10_Illumina_subtype_report.tsv
+	echo -e SAMPLE\\\tTYPE\\\tSUBTYPE\\\tVARTYPE\\\tISOLATE_DATABASE\\\tCHROM\\\tPOS\\\tREF\\\tALT\\\tGENE >> 10_Illumina_subtype_report.tsv.tmp
 	while IFS=\$'\t' read sample chrom pos type ref alt evidence ftype strand nt_pos aa_pos effect locus_tag gene product; do
 		while IFS=\$'\t' read db_LPStype db_subtype db_isolate db_chrom db_pos db_type db_ref db_alt db_gene; do 
 			if [[ \$chrom == \$db_chrom && \$pos == \$db_pos && \$ref == \$db_ref && \$alt == \$db_alt ]]; then
 				if [[ \$sample != "sampleID" ]]; then
-					echo \$sample"\t"\$db_LPStype"\t"\$db_subtype"\t"\$db_type"\t"\$db_isolate"\t"\$db_chrom"\t"\$db_pos"\t"\$db_ref"\t"\$db_alt"\t"\$db_gene  >> 10_Illumina_subtype_report.tsv
+					echo \$sample"\t"\$db_LPStype"\t"\$db_subtype"\t"\$db_type"\t"\$db_isolate"\t"\$db_chrom"\t"\$db_pos"\t"\$db_ref"\t"\$db_alt"\t"\$db_gene  >> 10_Illumina_subtype_report.tsv.tmp
 				fi
 			fi
 		done < ${params.subtype_db}
 	done < 8_Illumina_snippy_snps.tsv
+	awk -F'\t' 'NR > 1 {split(\$2, a, "-"); gsub("LPS", "L", a[1]); print \$1 "\t" a[1]}' "${kaptive_summary}" > kaptive_tmp
+	cut -f1 10_Illumina_subtype_report.tsv.tmp | grep -v SAMPLE | uniq > list_samples_snippy_exclude
+	while IFS=\$'\t' read sample_to_exclude; do 
+		grep -v \$sample_to_exclude kaptive_tmp > kaptive_to_keep
+		mv kaptive_to_keep kaptive_tmp
+	done < list_samples_snippy_exclude
+	awk '{print \$0 "\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA"}' kaptive_tmp > kaptive_to_keep.tsv
+	cat 10_Illumina_subtype_report.tsv.tmp kaptive_to_keep.tsv > 10_Illumina_subtype_report.tsv
 	"""
 }
 
@@ -500,7 +509,9 @@ workflow {
 	kaptive3(shovill.out.assembly_out)
 	summary_kaptive(kaptive3.out.kaptive_tsv.collect())
 	snippy(fastp.out.trimmed_fastq.join(kaptive3.out.kaptive_results))
-	report(snippy.out.snippy_impact_tab.collect())
+	snippy_tab_ch=snippy.out.snippy_impact_tab.collect()
+	kaptive_summary_ch=summary_kaptive.out.kaptive_summary
+	report(snippy_tab_ch,kaptive_summary_ch)
 	mlst(shovill.out.assembly_out)
 	summary_mlst(mlst.out.mlst_results.collect())
 	bakta(shovill.out.assembly_out)
