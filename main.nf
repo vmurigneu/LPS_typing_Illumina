@@ -187,6 +187,20 @@ process summary_quast {
 	"""
 }
 
+process download_checkm_db {
+	publishDir "$params.outdir/../databases/",  mode: 'copy'
+	output:
+		path("checkm_data_2015_01_16"), emit: checkm_db_folder
+	when:
+	params.download_checkm_db
+	script:
+	"""
+	wget https://data.ace.uq.edu.au/public/CheckM_databases/checkm_data_2015_01_16.tar.gz
+	mkdir checkm_data_2015_01_16
+	tar -xvzf checkm_data_2015_01_16.tar.gz -C checkm_data_2015_01_16
+	"""
+}
+
 process checkm {
         cpus "${params.threads}"
         tag "${sample}"
@@ -195,7 +209,7 @@ process checkm {
         publishDir "$params.outdir/$sample/5_checkm",  mode: 'copy', pattern: "*.log", saveAs: { filename -> "${sample}_$filename" }
 	publishDir "$params.outdir/$sample/5_checkm",  mode: 'copy', pattern: '*tsv'
         input:
-                tuple val(sample), path(assembly)
+                tuple val(sample), path(assembly), path(checkm_db_folder)
         output:
                 path("checkm.log")
 		path("*checkm_lineage_wf_results.tsv"), emit: checkm_results
@@ -227,6 +241,21 @@ process summary_checkm {
 	"""
 }
 
+process download_kraken_db {
+	publishDir "$params.outdir/../databases/",  mode: 'copy'
+	output:
+		path("k2_pluspf_20240605"), emit: kraken_db_folder
+	when:
+	params.download_kraken_db
+	script:
+	"""	
+	wget https://genome-idx.s3.amazonaws.com/kraken/k2_pluspf_20240605.tar.gz
+	tar -xvzf k2_pluspf_20240605.tar.gz
+	mkdir k2_pluspf_20240605
+	mv *k2d *md5 *distrib *tsv *txt *map k2_pluspf_20240605/
+	"""
+}
+
 process kraken {
         cpus "${params.threads}"
         tag "${sample}"
@@ -236,7 +265,7 @@ process kraken {
 	publishDir "$params.outdir/$sample/6_kraken",  mode: 'copy', pattern: '*txt', saveAs: { filename -> "${sample}_$filename" }
 	publishDir "$params.outdir/$sample/6_kraken",  mode: 'copy', pattern: '*tsv.gz', saveAs: { filename -> "${sample}_$filename" }
         input:
-                tuple val(sample), path(reads1), path(reads2), path(reads1_trimmed), path(reads2_trimmed)
+                tuple val(sample), path(reads1), path(reads2), path(reads1_trimmed), path(reads2_trimmed), path(kraken_db)
         output:
                 tuple val(sample), path(reads1_trimmed), path(reads2_trimmed), path("kraken2_report.txt"), path("kraken2.tsv.gz"),  emit: kraken_results
                 path("kraken.log")
@@ -433,13 +462,25 @@ process summary_mlst {
 	"""
 }
 
+process download_bakta_db {
+    publishDir "$params.outdir/../databases/",  mode: 'copy'
+    output:
+        path("bakta_db"), emit: bakta_db_folder
+    when:
+    params.download_bakta_db
+    script:
+    """
+    bakta_db download --output bakta_db --type full
+    """
+}
+
 process bakta {
 	cpus "${params.bakta_threads}"
 	tag "${sample}"
 	publishDir "$params.outdir/$sample/11_bakta",  mode: 'copy', pattern: "*.log"
 	publishDir "$params.outdir/$sample/11_bakta",  mode: 'copy', pattern: '*bakta*'
 	input:
-		tuple val(sample), path(assembly)
+		tuple val(sample), path(assembly), path(bakta_db_folder)
 	output:
 		path("*bakta*")
 		path("bakta.log")
@@ -452,12 +493,24 @@ process bakta {
 	"""
 }
 
+process download_amrfinder_db {
+	publishDir "$params.outdir/../databases/amrfinderplus",  mode: 'copy'
+	output:
+		path("amrfinderplus_db"), emit: amrfinder_db_folder
+	when:
+	params.download_amrfinder_db
+	script:
+	"""
+	amrfinder_update -d amrfinderplus_db
+	"""
+}
+
 process amrfinder {
 	tag "${sample}"
 	publishDir "$params.outdir/$sample/12_amrfinder",  mode: 'copy', pattern: "*.log", saveAs: { filename -> "${sample}_$filename" }
 	publishDir "$params.outdir/$sample/12_amrfinder",  mode: 'copy', pattern: '*tsv'
 	input:
-		tuple val(sample), path(assembly)
+		tuple val(sample), path(assembly), path(amrfinder_db_folder)
 	output:
 		path("*.tsv"), emit: amrfinder_results
 		path("amrfinder.log")
@@ -501,10 +554,20 @@ workflow {
 	summary_shovill(shovill.out.assembly_fasta.collect())
 	quast(shovill.out.assembly_out)
 	summary_quast(quast.out.quast_results.collect())
-	kraken(fastp.out.trimmed_fastq)
+	if (params.download_kraken_db) {
+		download_kraken_db()
+		kraken(fastp.out.trimmed_fastq.combine(download_kraken_db.out.kraken_db_folder))
+	} else {
+		kraken(fastp.out.trimmed_fastq.combine(Channel.fromPath( "${params.outdir}/../databases/k2_pluspf_20240605")))
+	}
 	bracken(kraken.out.kraken_results)
 	summary_bracken(bracken.out.bracken_results.collect())
-	checkm(shovill.out.assembly_out)
+	if (params.download_checkm_db) {
+		download_checkm_db()
+		checkm(shovill.out.assembly_out.combine(download_checkm_db.out.checkm_db_folder))
+	} else {
+		checkm(shovill.out.assembly_out.combine(Channel.fromPath( "${params.outdir}/../databases/checkm_data_2015_01_16")))
+	}
 	summary_checkm(checkm.out.checkm_results.collect())
 	kaptive3(shovill.out.assembly_out)
 	summary_kaptive(kaptive3.out.kaptive_tsv.collect())
@@ -514,7 +577,17 @@ workflow {
 	report(snippy_tab_ch,kaptive_summary_ch)
 	mlst(shovill.out.assembly_out)
 	summary_mlst(mlst.out.mlst_results.collect())
-	bakta(shovill.out.assembly_out)
-	amrfinder(shovill.out.assembly_out)
+	if (params.download_bakta_db) {
+		download_bakta_db()
+		bakta(shovill.out.assembly_out.combine(download_bakta_db.out.bakta_db_folder))
+	} else {
+		bakta(shovill.out.assembly_out.combine(Channel.fromPath( "${params.outdir}/../databases/bakta_db/db")))
+	}	
+	if (params.download_amrfinder_db) {
+		download_amrfinder_db()
+		amrfinder(shovill.out.assembly_out.combine(download_amrfinder_db.out.amrfinder_db_folder))
+	} else {	
+		amrfinder(shovill.out.assembly_out.combine(Channel.fromPath("${params.outdir}/../databases/amrfinderplus/amrfinderplus_db/latest")))
+	}
 	summary_amrfinder(amrfinder.out.amrfinder_results.collect())
 }
