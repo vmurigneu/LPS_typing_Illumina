@@ -94,11 +94,16 @@ This is the bash script used to launch the workflow on the HPC. The template slu
 
 **2) Database files for Kraken, Kaptive, CheckM, Bakta and AMRFinderPlus**
 
+There are two options to obtain the databases files: 
+- **a) Databases stored locally for Lida's team**  
 Copy the databases folder from the RDM to the cloned pipeline repository on the scratch space (named "dir" below):
 ```
 dir=/scratch/project_mnt/SXXX/PIPELINE/LPS_typing_Illumina
 cp -r /QRISdata/Q2313/Valentine/PIPELINES/databases ${dir}
 ```
+
+- **b) Databases download for other users**     
+The databases for Kraken, CheckM, Bakta and AMRFinderPlus can be downloaded automatically using the pipeline parameters --download_kraken_db, --download_checkm_db, --download_bakta_db, and --download_amrfinder_db respectively. They will be downloaded in a folder called databases within your pipeline repository. Once the database folders have bveen downloaded once, you can remove the corresponding flags and the pipeline will reuse them automatically for subsequent runs.    
 
 **3) Prepare the samplesheet file (csv)**
 
@@ -165,12 +170,14 @@ Some parameters can be added to the command line in order to include or skip som
 
 5. Assembly quality assessment with CheckM:
 * `--skip_checkm`: skip the CheckM step (default=false)
-* `--checkm_db`: path to the CheckM database folder (default="../../../databases/CheckM-1.2.2)
+* `--checkm_db`: path to the CheckM database folder (default="../../../databases/checkm_data_2015_01_16")
+* `--download_checkm_db`: download the checkm database from https://data.ace.uq.edu.au/public/CheckM_databases/checkm_data_2015_01_16.tar.gz (default=false)
 
 6. Kraken2/Bracken taxonomy classification:
 * `--skip_kraken`: skip the Kraken2/Bracken classification step (default=false)
 * `--kraken_db`: path to the Kraken2 database folder (default="../../../databases/k2_pluspf_20240605")
-
+* `--download_kraken_db`: download the kraken database from https://genome-idx.s3.amazonaws.com/kraken/k2_pluspf_20240605.tar.gz (default=false)
+  
 7. LPS typing using Kaptive:
 * `--skip_kaptive3`: skip the Kaptive typing step (default=false). note: it will automatically skip the variant calling step.
 * `--kaptive_db_9lps`: path to the Kaptive database file (default=""../../../databases/kaptive3_LPS_db_v1/9lps.gbk")
@@ -191,12 +198,14 @@ Some parameters can be added to the command line in order to include or skip som
 11. Genome annotation using Bakta:
 * `--skip_bakta`: skip the genome annotation step (default=false)
 * `--bakta_threads`: number of threads for the Bakta step (default=8)  
-* `--bakta_db`: path to the Bakta database files (default="../../../databases/bakta/db")
+* `--bakta_db`: path to the Bakta database files (default="../../../databases/bakta_db/db")
+* `--download_bakta_db`: download the latest Bakta database using the command *bakta_db download* (default=false)
 * `--bakta_args`: Bakta optional parameters (default="--proteins ../../../databases/LPS/NC_002663_LPS.gb")  
 
 12. AMR genes identification using AMRFinderPlus:
 * `--skip_amrfinder`: skip the AMR genes identification step (default=false)
-* `--amrfinder_db`: path to the AMRFinderPlus database files (default="../../../databases/amrfinderplus/2025-03-25.1")
+* `--amrfinder_db`: path to the AMRFinderPlus database files (default="../../../databases/amrfinderplus/amrfinderplus_db/latest")
+* `--download_amrfinder_db`: download the latest AMRFinderPlus database using the command *amrfinder_update* (default=false)
 * `--amrfinder_args`: AMRFinderPlus optional parameters (default="")
   
 ## Structure of the output folders
