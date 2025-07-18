@@ -1,0 +1,9 @@
+L1	../../../databases/LPS/L1_X73_H1.gb	../../../databases/LPS/L1_X73_H1.fasta
+L2	../../../databases/LPS/L2_M1404_H2.gb	../../../databases/LPS/L2_M1404_H2.fasta
+L3	../../../databases/LPS/NC_002663_LPS.gb	../../../databases/LPS/NC_002663_LPS.fasta
+L4	../../../databases/LPS/L4_P2192_H6.gb	../../../databases/LPS/L4_P2192_H6.fasta
+L5	../../../databases/LPS/L5_P2095_H9.gb	../../../databases/LPS/L5_P2095_H9.fasta
+L6	../../../databases/LPS/L6_P1573_H12.gb	../../../databases/LPS/L6_P1573_H12.fasta
+L7	../../../databases/LPS/L7_P1581_H8.gb	../../../databases/LPS/L7_P1581_H8.fasta
+L8	../../../databases/LPS/L8_P2723_H16.gb	../../../databases/LPS/L8_P2723_H16.fasta
+L9	../../../databases/LPS/L9_Past29_LPS.gb	../../../databases/LPS/L9_Past29_LPS.fasta

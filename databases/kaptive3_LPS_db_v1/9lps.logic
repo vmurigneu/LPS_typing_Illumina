@@ -1,0 +1,9 @@
+loci	genes	phenotype
+LPS3-H3	natC,truncated	L3 outer core lacking the second N-acteylgalactosamine GalNAcII
+LPS3-H3	gatG,truncated	L3 outer core lacking the second galactose GalII
+LPS3-H3	gatG,truncated;natC,truncated	L3 outer core lacking GalII and GalNAcII
+LPS3-H3	hptE,truncated	L3 outer core lacking the heptose Hep IV
+LPS3-H3	natB,truncated	L3 outer core lacking the first N-acteylgalactosamine GalNAcI
+LPS6-H12	hptE,truncated	L6 outer core null
+LPS6-H12	gctD,truncated	L6 outer core truncated
+LPS6-H12	nctB,truncated	L6 outer core truncated
