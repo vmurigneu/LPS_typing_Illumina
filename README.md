@@ -51,7 +51,7 @@ The software [mlst](https://github.com/tseemann/mlst) is used to scan the genome
 
 ### 10.  LPS subtype report
 
-The pipeline generates a subtype report file (10_Illumina_subtype_report.tsv) summarising the variants found in the subtype database. To be reported, the variant identified by snippy must be present in the subtype database with the following conditions:  
+The pipeline generates a subtype report file (10_Illumina_subtype_report.tsv) summarising the variants found in the [subtype database](https://github.com/vmurigneu/LPS_typing_Illumina/tree/main/databases/LPS/LPS_subtype_database_v1.txt). To be reported, the variant identified by snippy must be present in the subtype database with the following conditions:  
 - the variant must be identified at the same position in the same reference sequence and
 - both the reference allele and the alternate allele must be matching their corresponding allele from the variant in the database.  
 
@@ -103,7 +103,8 @@ cp -r /QRISdata/Q2313/Valentine/PIPELINES/databases ${dir}
 ```
 
 - **b) Databases download for other users**     
-The databases for Kraken, CheckM, Bakta and AMRFinderPlus can be downloaded automatically using the pipeline parameters --download_kraken_db, --download_checkm_db, --download_bakta_db, and --download_amrfinder_db respectively. They will be downloaded in a folder called databases within your pipeline repository. Once the database folders have bveen downloaded once, you can remove the corresponding flags and the pipeline will reuse them automatically for subsequent runs.    
+The databases for Kraken, CheckM, Bakta and AMRFinderPlus can be downloaded automatically using the pipeline parameters --download_kraken_db, --download_checkm_db, --download_bakta_db, and --download_amrfinder_db respectively. The database folders will be downloaded in a folder called databases within your pipeline repository. Once the database folders have been downloaded once, you can remove the corresponding flags and the pipeline will reuse them automatically for subsequent runs.  
+The LPS type and subtype database are already included in the github [databases](https://github.com/vmurigneu/LPS_typing_Illumina/tree/main/databases) repository.     
 
 **3) Prepare the samplesheet file (csv)**
 
